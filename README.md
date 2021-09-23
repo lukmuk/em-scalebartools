@@ -52,7 +52,7 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 * Requires the useful [EM tool](https://imagej.net/plugins/imbalence) plugin by **IMBalENce**  as FEI/TFS images are scaled with [SEM FEI metadata scale](https://imagej.net/plugins/sem-fei-metadata-scale). Install via the Fiji update site.
 
-* Download the `macros` folder and copy it to your Fiji installation folder. It will add the `QuickScaleTools.ijm` and `FEI_Crop_Scalebar.ijm` macros to the macros folder and the `ScaleBarTools.ijm` toolset to the `macros/toolset` folder.
+* Download the latest [release](https://github.com/lukmuk/em-scalebartools/releases), extract the `macros` folder, and copy it to your Fiji installation folder. It will add the `QuickScaleTools.ijm` and `FEI_Crop_Scalebar.ijm` macros to the macros folder and the `ScaleBarTools.ijm` toolset to the `macros/toolset` folder.
 
 * Restart Fiji and select the `ScaleBarTools` from `More Tools...` (>>) menu. 
 
