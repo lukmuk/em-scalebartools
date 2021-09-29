@@ -16,6 +16,8 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 <img title="Example 1" src="images/example2.png" alt="Example" data-align="center">
 
+
+
 ## Macro description
 
 ##### QuickScaleBar Tool (Icon: <u>SB</u>)
@@ -125,6 +127,17 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 `Show metadata in log window`: Keep log window open or close it (default: `false`).
 
 `Run custom macro commands`: Run commands specified in next line (default: `false`). In the `Custom macro commands` field, multiple commands must be separated by `;`.
+
+## EMScaleBarTools in action
+
+Basic usage with cropping of a TFS/FEI databar, addition of a scale bar, moving and removing of the scale bar:
+<img title="Basic usage" src="images/EMscalebartools_01.gif" alt="Example" data-align="center">
+
+The next GIF shows the application of `Auto re-scale images` to upscale a small (in pixels) inset of an image:
+<img title="Using Auto re-scale" src="images/EMscalebartools_02.gif" alt="Example" data-align="center">
+
+The next GIF shows an example workflow when working with presentations (here Microsoft PowerPoint). For a horizontal alignment of images (here an SEM and an HAADF-STEM image) with the same desired image height, the scale bar reference is switched to `Height`. Note the automatic handling of unit-switching and rescaling as in the previous example. The image are then copied via the hotkey c to the system clipboard and pasted into PowerPoint.
+<img title="Workflow for presentations" src="images/EMscalebartools_03.gif" alt="Example" data-align="center">
 
 ## Other useful scalebar tools
 
