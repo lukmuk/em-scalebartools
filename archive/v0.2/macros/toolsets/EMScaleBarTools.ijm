@@ -16,13 +16,12 @@ The following macros are available as buttons:
 * ?: Opens help dialog.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 11/2021, https://github.com/lukmuk/em-scalebartools
+* Author: lukmuk, 09/2021, https://github.com/lukmuk/em-scalebartools
 
 */
 
 // Initalize variables or recover currrent values from presets
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
-var sf = call("ij.Prefs.get", "sb.sf", 1); // default 1
 var wfac = call("ij.Prefs.get", "sb.wfac", 0.2);  // default 0.2
 var fsfac = call("ij.Prefs.get", "sb.fsfac", 3);  // default 2
 var col = call("ij.Prefs.get", "sb.col", "Black");  // default "Black"
@@ -49,7 +48,6 @@ var extraCmd = call("ij.Prefs.get", "sb.extraCmd", "run('Enhance Contrast', 'sat
 
 //FEI CROP SCALEBAR
 var FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
-var FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 var FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
 var FEIdoExtraCmd = call("ij.Prefs.get", "sb.FEIdoExtraCmd", false); //default false
 var FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
@@ -82,8 +80,6 @@ macro "QuickScaleBar Action Tool Options" {
 	
 	//Dialog.addMessage("Scalebar appearance", 15);
 	Dialog.addNumber("Relative height: ", hfac);
-	Dialog.addToSameRow();
-	Dialog.addNumber("Scaling factor: ", sf);
 	Dialog.addNumber("Relative width: ", wfac);
 	Dialog.addNumber("Relative fontsize: ", fsfac);
 	Dialog.addChoice("Scalebar color:", colors, col);
@@ -118,7 +114,6 @@ macro "QuickScaleBar Action Tool Options" {
 	
 	//Grab values from UI
 	hfac = Dialog.getNumber();
-	sf = Dialog.getNumber();
 	wfac = Dialog.getNumber();
 	fsfac = Dialog.getNumber();
 	col = Dialog.getChoice();
@@ -148,7 +143,6 @@ macro "QuickScaleBar Action Tool Options" {
 	
 	// store updated values for future use
 	call("ij.Prefs.set", "sb.hfac", hfac); // default 0.02
-	call("ij.Prefs.set", "sb.sf", sf); // default 1
 	call("ij.Prefs.set", "sb.wfac", wfac);  // default 0.2
 	call("ij.Prefs.set", "sb.fsfac", fsfac);  // default 2
 	call("ij.Prefs.set", "sb.col", col);  // default "Black"
@@ -203,7 +197,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	// options dialog
 	Dialog.create("FEI Crop Scalebar tool options");
 	Dialog.addCheckbox("Crop data bar", FEIdoCrop);
-	Dialog.addCheckbox("Use list from code for cropping value (legacy option)", FEIuseList);
 	Dialog.addCheckbox("Show metadata in log window", FEIshowMeta);
 	Dialog.addCheckbox("Run custom macro commands", FEIdoExtraCmd);
 	Dialog.addString("Custom macro commands:", FEIextraCmd, 30);
@@ -212,14 +205,12 @@ macro "FEI Crop Scalebar Action Tool Options" {
 
 	// grab values
 	FEIdoCrop = Dialog.getCheckbox();
-	FEIuseList = Dialog.getCheckbox();
 	FEIshowMeta = Dialog.getCheckbox();
 	FEIdoExtraCmd = Dialog.getCheckbox();
 	FEIextraCmd = Dialog.getString();
 
 	// store updated values
 	call("ij.Prefs.set", "sb.FEIdoCrop", FEIdoCrop);
-	call("ij.Prefs.set", "sb.FEIuseList", FEIuseList);
 	call("ij.Prefs.set", "sb.FEIshowMeta", FEIshowMeta);
 	call("ij.Prefs.set", "sb.FEIdoExtraCmd", FEIdoExtraCmd);
 	call("ij.Prefs.set", "sb.FEIextraCmd", FEIextraCmd);
@@ -332,15 +323,37 @@ macro "Remove Overlays Tool Options" {
 } 
 */
 
-// Drop down menu tool
+macro "About EMScaleBarTools Action Tool - C037T3f18?" {
+	Dialog.create("About EMScaleBarTools");
+	about="------------------------ \"EMScaleBarTools\" --------------------------\n";
+	about= about+"The \"EMScaleBarTools\" toolset allows drawing of scale bars based on the relative image size.";
+	about= about+"\n SEM images from Thermo Fisher Scientific (TFS)/FEI are often saved with a data bar which can be cropped.";
+	about= about+"\n For scaling FEI/TFS SEM images, the plugin \"SEM FEI metadata scale\" is required:";
+	about= about+"\n Link: https://imagej.net/plugins/imbalence";
+	about= about+"\n Click on the Help button below to open the Github repository for more information.";
+	about= about+"\n I hope you can find use in \"EMScaleBarTools\"";
+	about=about + "\n---------------------------------------------------------------------------------";
+	about= about+"\nShort documentation:";
+	about=about+"\n";
+	about= about+"\n - \"QuickScaleBar (QSB) tool\": Creates a scale bar on a scaled image. Right click to open the options menu.";
+	about= about+"\n - \"FEI Crop Scalebar\": Use it on FEI/TFS tiff files to crop data bar and add a scale bar based on QSB settings.";
+	about= about+"\n IMPORTANT: May require the user to add the microscope type and crop margins into the source code (see Github).";
+	about= about+"\n - \"Move Overlay\" tool: Enables fine-tuning of overlays (i.e.) scale bar position by mouse dragging.";
+	about= about+"\n - \"Remove Overlay\" tool: Remove all overlays from the image, including the scale bar.";
+	about=about + "\n---------------------------------------------------------------------------------";
+	about= about+"\n Default hotkeys:";
+	about=about+"\n";
+	about= about+"\n - \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor.";
+	about= about+"\n - \"Save As PNG... [ p ]\": Save image as PNG.";
+	about= about+"\n - \"Copy to system... [ c ]\": Copy current image to system clipboard.";
+	about=about + "\n---------------------------------------------------------------------------------";
+	about=about +"\n Version: 0.2";
+	about=about +"\nAuthor : lukmuk, 09/2021, https://github.com/lukmuk/em-scalebartools";
 
-var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Help"));
-macro "Misc. Functions Menu Tool - C037T3f18?"{
-	cmd = getArgument();
-	if (cmd!="-" && cmd == "Set pixel size and unit") setPxAndUnit();
-	if (cmd!="-" && cmd == "Help") HelpMenu();
-}
-	
+	Dialog.addMessage(about);
+	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+	Dialog.show();
+}	
 
 // --------------------------------------------- //
 // ------------------ HOTKEYS ------------------ //
@@ -401,9 +414,6 @@ function addScalebar() {
 	}
 	if(sb_size_ref == "Width") height = round(getWidth()*hfac);
 	if(sb_size_ref == "Height") height = round(getHeight()*hfac);
-
-	// Multiply height with scaling factor
-	height = height * sf;
 
 	//Calculate fontsize
 	fontsize = height * fsfac;
@@ -600,77 +610,3 @@ function getSelectedElements( ) {
   while( selected.startsWith( "," ) ) selected = substring( selected, 1, lengthOf( selected ) ); 
   return selected; 
 } 
-
-// Set pixel size and unit...
-function setPxAndUnit() {
-	// Grab pixel size and unit from current image
-	getPixelSize(u, pw, ph);
-	
-	//Options dialog
-	Dialog.create("Set pixel size and unit");
-
-	//Special character list
-	//Angstrom, Angstrom-1, nm-1
-	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
-	
-	//Dialog.addMessage("Scalebar appearance", 15);
-	Dialog.addNumber("Pixel size: ", pw);
-	Dialog.addString("Unit: ", u);
-
-	Dialog.addCheckbox("Use special unit: ", false);
-	Dialog.addToSameRow();
-	Dialog.addChoice("", special, fromCharCode(0x0212b));
-	//Dialog.addString("Custom string:", "", 20);
-	
-	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
-	Dialog.show();
-	
-	//Grab values from UI
-	pw_new = Dialog.getNumber();
-	ph_new = pw_new;
-	u_new = Dialog.getString();
-	//custom_string = Dialog.getString();
-
-	UseUnitFromMenu = Dialog.getCheckbox();
-	if(UseUnitFromMenu) {
-		u_new = Dialog.getChoice();
-		//if(eval(custom_string) != "") u_new = eval(custom_string);
-	}
-
-	//setVoxelSize(width, height, depth, unit);
-	setVoxelSize(pw_new, ph_new, 1, u_new);
-}
-
-// Help Menu
-function HelpMenu() {
-	Dialog.create("About EMScaleBarTools");
-	about="------------------------ EMScaleBarTools --------------------------";
-	about= about+"\nThe \"EMScaleBarTools\" toolset allows drawing of scale bars based on the relative image size.";
-	about= about+"\nSEM images from Thermo Fisher Scientific (TFS)/FEI are often saved with a data bar which can be cropped.";
-	about= about+"\nFor scaling FEI/TFS SEM images, the plugin \"SEM FEI metadata scale\" is required:";
-	about= about+"\nLink: https://imagej.net/plugins/imbalence";
-	about= about+"\nClick on the \"Help\" button below to open the Github repository for more information.";
-	about= about+"\nI hope you can find use in \"EMScaleBarTools\"! :-)";
-	about=about + "\n---------------------------------------------------------------------------------";
-	about= about+"\nShort documentation:";
-	about=about+"\n";
-	about= about+"\n- \"QuickScaleBar\" (QSB) tool: Creates a scale bar on a scaled image. Right click to open the options menu.";
-	about= about+"\n- \"FEI Crop Scalebar\": Use it on FEI/TFS tiff files to crop data bar and add a scale bar based on QSB settings.";
-	about= about+"\n- \"Move Overlay\" tool: Enables fine-tuning of overlays (i.e.) scale bar position by mouse dragging.";
-	about= about+"\n- \"Remove Overlay\" tool: Remove all overlays from the image, including the scale bar.";
-	about= about+"\n- \"Misc. Functions\" menu: Drop-down menu with miscellaneous functions:";
-	about= about+"\n       \"Set pixel size and unit:\" function: Scale image based on pixel size and unit.";
-	about=about + "\n---------------------------------------------------------------------------------";
-	about= about+"\nDefault hotkeys:";
-	about=about+"\n";
-	about= about+"\n- \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor.";
-	about= about+"\n- \"Save As PNG... [ p ]\": Save image as PNG.";
-	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard.";
-	about=about + "\n---------------------------------------------------------------------------------";
-	about=about +"\nVersion: 0.21";
-	about=about +"\nAuthor: Lukas Gr"+fromCharCode(0x00FC)+"newald, 11/2021, https://github.com/lukmuk/em-scalebartools";
-
-	Dialog.addMessage(about);
-	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
-	Dialog.show();
-}	

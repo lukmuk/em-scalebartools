@@ -17,13 +17,12 @@ The following macros are available as buttons:
 * ?: Opens help dialog.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 11/2021, https://github.com/lukmuk/em-scalebartools
+* Author: lukmuk, 09/2021, https://github.com/lukmuk/em-scalebartools
 
 */
 
 //Get settings for scale bar
 hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
-sf = call("ij.Prefs.get", "sb.sf", 1); // default 1
 wfac = call("ij.Prefs.get", "sb.wfac", 0.2);  // default 0.2
 fsfac = call("ij.Prefs.get", "sb.fsfac", 3);  // default 3
 col = call("ij.Prefs.get", "sb.col", "Black");  // default "Black"
@@ -46,78 +45,52 @@ rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //default
 
 //FEI CROP SCALEBAR
 FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
-FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
 FEIdoExtraCmd = call("ij.Prefs.get", "sb.FEIdoExtraCmd", false); //default false
 FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
 
 
 if(FEIdoCrop) {
-	if(FEIuseList) {
-		//Get microscope info
-		// Taken from https://github.com/IMBalENce/EM-tool/blob/master/SEM_FEI_metadata_Scale.ijm
-		run("Bio-Formats Macro Extensions");
-		path = getDirectory("image");
-		if (path=="") exit ("path not available");
-		name = getInfo("image.filename");
-		if (name=="") exit ("name not available");
-		id = path + name;
-		Ext.setId(id);
-		Ext.getSeriesCount(seriesCount);
-		
-		// Determine which microscope is used, can be expanded to accommondate more types
-		Ext.getMetadataValue("[System] SystemType", SystemType);
+	//Get microscope info
+	// Taken from https://github.com/IMBalENce/EM-tool/blob/master/SEM_FEI_metadata_Scale.ijm
+	run("Bio-Formats Macro Extensions");
+	path = getDirectory("image");
+	if (path=="") exit ("path not available");
+	name = getInfo("image.filename");
+	if (name=="") exit ("name not available");
+	id = path + name;
+	Ext.setId(id);
+	Ext.getSeriesCount(seriesCount);
 	
-		// Crop based on microscope type
-		w=getWidth();
-		h=getHeight();
-		
-		//HELIOS
-		//Crop FEI infobar, which for HELIOS is the rest between the image 
-		//height in pixels and the next smaller power of 2
-		if(SystemType == "Helios G4 FX") {
-			c = pow(2, floor(log(h)/log(2)));
-			run("Specify...", "width=w height="+c+" x=0 y=0");
-			run("Crop");
-		}
-		
-		//STRATA and ESEM/Quanta
-		//For Strata, the crop values are listed in the "heights" array
-		if(SystemType == "Strata DB" || SystemType == "Quanta FEG") {
-			heights = newArray(443 , 884, 884*2, 884*4);
-			jndex = 0;
-			for (j=0; j<heights.length; j++)
-				if(h > heights[j])
-					jndex = j;
-					continue;
-				break;
-			run("Specify...", "width=w height="+heights[jndex]+" x=0 y=0");
-			run("Crop");
-		}
-	}
-	else {
-		run("Bio-Formats Macro Extensions");
-		path = getDirectory("image");
-		if (path=="") exit ("path not available");
-		name = getInfo("image.filename");
-		if (name=="") exit ("name not available");
-		id = path + name;
-		Ext.setId(id);
-		Ext.getSeriesCount(seriesCount);
+	// Determine which microscope is used, can be expanded to accommondate more types
+	Ext.getMetadataValue("[System] SystemType", SystemType);
 
-		// Determine which microscope is used, can be expanded to accommondate more types
-		Ext.getMetadataValue("[System] SystemType", SystemType);
-		Ext.getMetadataValue("[Scan] PixelHeight", VerPixelsize); //in m
-		Ext.getMetadataValue("[Scan] VerFieldsize", VerFieldsize); //in m
-
-		// Crop based on microscope type
-		w=getWidth();
-		
-		// Crop
-		run("Specify...", "width=w height="+round(VerFieldsize/VerPixelsize)+" x=0 y=0");
+	// Crop based on microscope type
+	w=getWidth();
+	h=getHeight();
+	
+	//HELIOS
+	//Crop FEI infobar, which for HELIOS is the rest between the image 
+	//height in pixels and the next smaller power of 2
+	if(SystemType == "Helios G4 FX") {
+		c = pow(2, floor(log(h)/log(2)));
+		run("Specify...", "width=w height="+c+" x=0 y=0");
 		run("Crop");
 	}
 	
+	//STRATA and ESEM/Quanta
+	//For Strata, the crop values are listed in the "heights" array
+	if(SystemType == "Strata DB" || SystemType == "Quanta FEG") {
+		heights = newArray(443 , 884, 884*2, 884*4);
+		jndex = 0;
+		for (j=0; j<heights.length; j++)
+			if(h > heights[j])
+				jndex = j;
+				continue;
+			break;
+		run("Specify...", "width=w height="+heights[jndex]+" x=0 y=0");
+		run("Crop");
+	}
 }
 
 //Scale with "EM tool" script by IMBalENce
@@ -171,10 +144,7 @@ function addScalebar() {
 	}
 	if(sb_size_ref == "Width") height = round(getWidth()*hfac);
 	if(sb_size_ref == "Height") height = round(getHeight()*hfac);
-	
-	// Multiply height with scaling factor
-	height = height * sf;
-	
+
 	//Calculate fontsize
 	fontsize = height * fsfac;
 	
