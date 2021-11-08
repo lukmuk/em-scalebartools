@@ -16,6 +16,8 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 <img title="Example 1" src="images/example2.png" alt="Example" data-align="center">
 
+
+
 ## Macro description
 
 ##### QuickScaleBar Tool (Icon: <u>SB</u>)
@@ -44,6 +46,8 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 * Especially useful for batch conversion of SEM/FIB images (run from `Process -> Batch -> Macro...` ): In the batch processing menu insert the macro command `runMacro('FEI_Crop_Scalebar.ijm');`.
 
+* **Note:** The boundaries for the cropping area **depend on the microscope system type** because older FIB/SEMs use a nearly quadratic image format whereas modern microscope use landscape mode by default. You may need to adjust the microscope list once in the macro for your SEM, see instructions below. 
+
 ##### Move Overlays Tool (Circle icon)
 
 * Move around scale bar for fine tuning of the position. Will anchor to special positions for easier alignment.
@@ -54,22 +58,19 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 * Remove all overlays including the scale bar.
 
-##### Misc. Functions (Icon: ?)
+##### About EMScaleBarTools (Icon: ?)
 
-* `Set pixel size and unit`: Change image scale and unit. Default values are fetched from the selected image. You can then specify the values directly. For the unit, you can also choose from a list of special units for electron microscopy from the `Use special unit` menu. The latter do not shown on my Windows system, but on Linux. Currently in the list: Å, Å$^{-1}$ , and nm$^{-1}$ .
-* `Help`: Opens the help menu.
+* Opens a short help dialog.
 
 ## Requirements and Installation
 
-* Cropping the FEI/TFS info bar requires the useful [EM tool](https://imagej.net/plugins/imbalence) plugin by **IMBalENce**  as FEI/TFS images are scaled with [SEM FEI metadata scale](https://imagej.net/plugins/sem-fei-metadata-scale). Install via the Fiji update site.
+* Requires the useful [EM tool](https://imagej.net/plugins/imbalence) plugin by **IMBalENce**  as FEI/TFS images are scaled with [SEM FEI metadata scale](https://imagej.net/plugins/sem-fei-metadata-scale). Install via the Fiji update site.
 
 * Download the latest [release](https://github.com/lukmuk/em-scalebartools/releases), extract the `macros` folder, and copy it to your Fiji installation folder. It will add the``FEI_Crop_Scalebar.ijm`` macro to the macros folder and the `EMScaleBarTools.ijm` toolset to the `macros/toolset` folder.
 
 * Restart Fiji and select the `EMScaleBarTools` from `More Tools...` (>>) menu. 
 
 ##### Add a new microscope system type
-
-**Important: Should not be required for version 0.21 and higher. The cropping value will be determined automatically based on the extracted metadata.**
 
 Currently, only the system types `Helios G4 FX`, `Strata DB`, and `Quanta FEG` are implemented in `FEI Crop Scalebar`. You can add others in the following way:
 
@@ -86,8 +87,6 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 ###### QuickScaleBar Options
 
 ``Relative height``: Height of scale bar wrt image height in pixel (default: ``0.02``, 2% of image height)
-
-`Scaling factor`: Additional scaling factor that is multiplied with `Relative height` (default: `1`). Useful to quickly adjust scale-bar size by a scaling factor.
 
 `Relative width`: Width of scale bar with respect to  `Scalebar size reference`option (default: `0.2`, 20% of image width), will get rounded to next smaller "nice" value, see (``vals`` array in the code).
 
@@ -109,7 +108,7 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 
 `Scalebar size reference`: Base scale bar size on width/height/smaller/larger edge of the image (default: `'Larger'`). You can adjust this for narrow images to modify scale bar appearance. Use `Height`/`Width` if you want to have identical scale bar sizes for images of same `Height`/`Width`.
 
-`Auto unit-switching`: Automatically adjusts units between m and Å based on `Check`and `U` values. (default: `true`).
+`Auto unit-switching`: Automatically adjusts units between m and Angstrom based on `Check`and `U` values. (default: `true`).
 
 `(Auto unit-switching) Check`: Check width/height/both of image for unit switching (default: `'Width'`).
 
@@ -125,23 +124,11 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 
 `Crop data bar`: Crop data bar of FEI/TFS image (default: `true`)
 
-`Use list from code for cropping value (legacy option)`). Use list-based cropping value as in v0.2 and earlier. **Important: If your cropping does not work with the version 0.21 and higher, copy your determined cropping values into the new if-clause in the code and activate the aforementioned menu option.**
-
 `Show metadata in log window`: Keep log window open or close it (default: `false`).
 
 `Run custom macro commands`: Run commands specified in next line (default: `false`). In the `Custom macro commands` field, multiple commands must be separated by `;`.
 
-###### Hotkeys:
-
-[ j ] - Save image as jpeg. Prompts for quality/compression factor.
-
-[ p ] - Save images as png.
-
-[ c ] - Copy image to system clipboard.
-
 ## EMScaleBarTools in action
-
-Examples are from v0.2.
 
 Basic usage with cropping of a TFS/FEI databar, addition of a scale bar, moving and removing of the scale bar:
 <img title="Basic usage" src="images/EMscalebartools_01.gif" alt="Example" data-align="center">
@@ -163,20 +150,6 @@ The next GIF shows an example workflow when working with presentations (here Mic
 * Fiji/ImageJ: [Scale Bar Tools for Microscopes](http://image.bio.methods.free.fr/ImageJ/?Scale-Bar-Tools-for-Microscopes.html&lang=en) by Gilles Carpentier
 
 ## Changelog
-
-### v0.21
-
-* Rewrote ``FEI_crop_scalebar.ijm `` to crop the FEI/TFS info bar based on the `[Scan] VerFieldSize` and `[Scan]PixelHeight` values. This should make the cropping work for every FEI/TFS machine as long as both values are found in the tiff metadata.
-
-* Added an legacy option to use "list-based" cropping as in the old v0.2 version in the `FEI_crop_scalebar.ijm` option menu (`Use list from code for cropping value (legacy option)`). **Important: If your cropping does not work with the new version, copy your determined cropping values into the new if-clause in the code and activate the aforementioned menu option.**
-
-* The `Help` is now found in a new drop-down menu.
-
-* A new function `Set pixel size and unit` was added to the drop-down menu. IT will fetch the values from the front-most image. You can then specify the values directly or use some special formats for electron microscopy from the `Use special unit`  menu. The latter do not shown on my Windows system, but on Linux. Currently in the list: Å, Å$^{-1}$, and nm$^{-1}$.
-
-* Updated the readme.
-  
-  
 
 ### v0.2
 
