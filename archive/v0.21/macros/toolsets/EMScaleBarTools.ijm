@@ -1,20 +1,24 @@
 /*
 EMScaleBarTools is a suite of small functions to add a scale bar with reasonable size to a scaled image.
-It was developed with electron microscopy in mind and therefore the unit range spans (currently) from m to pm.
+It was developed with electron microscopy in mind and therefore the unit range spans (currently) only from m to pm.
 
 Installation:
 1) Place "EMScaleBarTools.ijm" in Fiji -> macros -> toolsets folder.
 2) Place "FEI_Crop_Scalebar.ijm" in Fiji -> macros folder.
-3) Restart Fiji and select EMScaleBarTools from toolset (>>) menu.
-4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
+3) Restart Fiji and select EMScaleBarTools from toolset >> menu.
+
+The following macros are available as buttons:
+* QuickScaleBar (with right-click option menu): Add a scale bar to a scaled image. 
+* FEI Crop Scalebar: Crop FEI/TFS infobar at the bottom of the image, optionally perform image operations, and add a scale bar.
+	   Standalone macro to allow for batch processing.
+* Move Overlays: Drag and drop for overlays, directly copied from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
+* Remove Overlays: Remove all overlays (i.e. scale bars)
+* ?: Opens help dialog.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 12/2021, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, 11/2021, https://github.com/lukmuk/em-scalebartools
 
 */
-
-var date = "12/2021"
-var version = 0.22
 
 // Initalize variables or recover currrent values from presets
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
@@ -35,7 +39,6 @@ var sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Larger"); //default "L
 var auto_unit_switching = call("ij.Prefs.get", "sb.auto_unit_switching", true); //default true
 var auto_unit_ref = call("ij.Prefs.get", "sb.auto_unit_ref", "Width"); //default false
 var U = call("ij.Prefs.get", "sb.U", 3); // default 3
-var use_angstrom = call("ij.Prefs.get", "sb.use_angstrom", true); //default true
 
 var auto_rescale = call("ij.Prefs.get", "sb.auto_rescale", false); //default false
 var rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //default 512
@@ -44,11 +47,7 @@ var rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //def
 var doExtraCmd = call("ij.Prefs.get", "sb.doExtraCmd", false); //default false
 var extraCmd = call("ij.Prefs.get", "sb.extraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
 
-var doExtraSBvals = call("ij.Prefs.get", "sb.doExtraSBvals", false); //default false
-var extraSBvals = call("ij.Prefs.get", "sb.extraSBvals", "75,150"); // default "75,150"
-
 //FEI CROP SCALEBAR
-var FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
 var FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
 var FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 var FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
@@ -64,11 +63,12 @@ var FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast'
 // --------------- QuickScaleBar --------------- //
 // ------------------ +options ----------------- //
 
-macro "QuickScaleBar Action Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C444C333C222C111C000D0dD0eD0fD11D12D13D14D15D16D19D1aD1bD1eD21D26D2bD2eD31D36D3bD3eD41D46D4bD4eD51D56D5bD5eD61D62D63D66D67D68D69D6aD6bD6eD7eD8eD91D92D93D94D95D96D97D98D99D9aD9bD9eDa1Da6DabDaeDb1Db6DbbDbeDc1Dc6DcbDceDd1Dd6DdbDdeDe2De3De4De5De7De8De9DeaDeeDfdDfeDff" {
+macro "QuickScaleBar Action Tool - C000D0eD0fD1eD1fD21D22D23D24D25D26D2aD2bD2eD2fD31D36D3bD3eD3fD41D46D4bD4eD4fD51D56D5bD5eD5fD61D66D6bD6eD6fD71D72D76D77D78D79D7aD7bD7eD7fD8eD8fD91D92D93D94D95D96D97D98D99D9aD9bD9eD9fDa1Da6DabDaeDafDb1Db6DbbDbeDbfDc1Dc6DcbDceDcfDd1Dd6DdbDdeDdfDe2De3De4De5De7De8De9DeaDeeDefDfeDffC000C111C222C333C444C555C666C777C888C999CaaaCbbbCcccCdddCeeeCfffD00D01D02D03D04D05D06D07D08D09D0aD0bD0cD0dD10D11D12D13D14D15D16D17D18D19D1aD1bD1cD1dD20D27D28D29D2cD2dD30D32D33D34D35D37D38D39D3aD3cD3dD40D42D43D44D45D47D48D49D4aD4cD4dD50D52D53D54D55D57D58D59D5aD5cD5dD60D62D63D64D65D67D68D69D6aD6cD6dD70D73D74D75D7cD7dD80D81D82D83D84D85D86D87D88D89D8aD8bD8cD8dD90D9cD9dDa0Da2Da3Da4Da5Da7Da8Da9DaaDacDadDb0Db2Db3Db4Db5Db7Db8Db9DbaDbcDbdDc0Dc2Dc3Dc4Dc5Dc7Dc8Dc9DcaDccDcdDd0Dd2Dd3Dd4Dd5Dd7Dd8Dd9DdaDdcDddDe0De1De6DebDecDedDf0Df1Df2Df3Df4Df5Df6Df7Df8Df9DfaDfbDfcDfd" {
 	addScalebar();
 }
 
 macro "QuickScaleBar Action Tool Options" {
+
 	//Options dialog
 	Dialog.create("QuickScaleBar tool options");
 
@@ -98,16 +98,12 @@ macro "QuickScaleBar Action Tool Options" {
 	Dialog.addCheckbox("Hide Text (Creates image with scalebar length in title)", hide);
 	
 	Dialog.addChoice("Scalebar size reference:", sb_size_refs, sb_size_ref);
-	
 	//Dialog.addMessage("Advanced settings:", 15);
 	Dialog.addCheckbox("Auto unit-switching", auto_unit_switching);
 	Dialog.addToSameRow();
 	Dialog.addChoice("Check:", auto_unit_refs, auto_unit_ref);
 	Dialog.addToSameRow();
 	Dialog.addNumber("Unit factor: ", U);
-	Dialog.addToSameRow();
-	Dialog.addCheckbox("Use Angstrom", use_angstrom);
-	
 	Dialog.addCheckbox("Auto re-scale images", auto_rescale);
 	Dialog.addToSameRow();
 	Dialog.addNumber("Min. height/width (pixels): ", rescale_target_px);
@@ -116,9 +112,6 @@ macro "QuickScaleBar Action Tool Options" {
 	Dialog.addCheckbox("Run custom macro commands", doExtraCmd);
 	Dialog.addString("Custom macro commands:", extraCmd, 70);
 	//Dialog.addCheckbox("Restore default settings", restore_defaults);
-
-	Dialog.addCheckbox("Consider additional scale bar values (separate with comma without spaces)", doExtraSBvals);
-	Dialog.addString("Custom scale bar values:", extraSBvals, 70);
 	
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
 	Dialog.show();
@@ -140,16 +133,12 @@ macro "QuickScaleBar Action Tool Options" {
 	auto_unit_switching = Dialog.getCheckbox();
 	auto_unit_ref = Dialog.getChoice();
 	U = Dialog.getNumber();
-	use_angstrom = Dialog.getCheckbox();
 	
 	auto_rescale= Dialog.getCheckbox();
 	rescale_target_px = Dialog.getNumber();
 	
 	doExtraCmd = Dialog.getCheckbox();
 	extraCmd = Dialog.getString(); 
-
-	doExtraSBvals = Dialog.getCheckbox();
-	extraSBvals = Dialog.getString(); 
 	
 	//rescale_create = Dialog.getCheckbox();
 
@@ -173,14 +162,11 @@ macro "QuickScaleBar Action Tool Options" {
 	call("ij.Prefs.set", "sb.auto_unit_switching", auto_unit_switching);  // default true
 	call("ij.Prefs.set", "sb.auto_unit_ref", auto_unit_ref);  // default "Width"
 	call("ij.Prefs.set", "sb.U", U);  // default 3
-	call("ij.Prefs.set", "sb.use_angstrom", use_angstrom); //default true
 	call("ij.Prefs.set", "sb.auto_rescale", auto_rescale);  // default false
 	call("ij.Prefs.set", "sb.rescale_target_px", rescale_target_px);  // default 512
 	//call("ij.Prefs.set", "sb.rescale_create", rescale_create);  // default true
 	call("ij.Prefs.set", "sb.doExtraCmd", doExtraCmd);
 	call("ij.Prefs.set", "sb.extraCmd", extraCmd);
-	call("ij.Prefs.set", "sb.doExtraSBvals", doExtraSBvals);
-	call("ij.Prefs.set", "sb.extraSBvals", extraSBvals);
 
 	/*
 	//restore default settings if restore_defaults
@@ -209,14 +195,13 @@ macro "QuickScaleBar Action Tool Options" {
 // ------------- FEI Crop Scalebar ------------- //
 // --------------------------------------------- //
 
-macro "FEI Crop Scalebar Action Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C444C333C222C111C000D02D03D04D05D06D07D08D09D0aD0bD0cD0dD12D17D22D27D32D37D42D47D52D72D73D74D75D76D77D78D79D7aD7bD7cD7dD82D87D8dD92D97D9dDa2Da7DadDb2Db7DbdDc2Dc7DcdDf2Df3Df4Df5Df6Df7Df8Df9DfaDfbDfcDfd" {
+macro "FEI Crop Scalebar Action Tool - C000D03D04D05D06D07D08D09D0aD0bD0cD13D17D23D27D33D37D43D47D73D74D75D76D77D78D79D7aD7bD7cD83D87D8cD93D97D9cDa3Da7DacDb3Db7DbcDe3De4De5De6De7De8De9DeaDebDecC000C111C222C333C444C555C666C777C888C999CaaaCbbbCcccCdddCeeeCfffD00D01D02D0dD0eD0fD10D11D12D14D15D16D18D19D1aD1bD1cD1dD1eD1fD20D21D22D24D25D26D28D29D2aD2bD2cD2dD2eD2fD30D31D32D34D35D36D38D39D3aD3bD3cD3dD3eD3fD40D41D42D44D45D46D48D49D4aD4bD4cD4dD4eD4fD50D51D52D53D54D55D56D57D58D59D5aD5bD5cD5dD5eD5fD60D61D62D63D64D65D66D67D68D69D6aD6bD6cD6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D84D85D86D88D89D8aD8bD8dD8eD8fD90D91D92D94D95D96D98D99D9aD9bD9dD9eD9fDa0Da1Da2Da4Da5Da6Da8Da9DaaDabDadDaeDafDb0Db1Db2Db4Db5Db6Db8Db9DbaDbbDbdDbeDbfDc0Dc1Dc2Dc3Dc4Dc5Dc6Dc7Dc8Dc9DcaDcbDccDcdDceDcfDd0Dd1Dd2Dd3Dd4Dd5Dd6Dd7Dd8Dd9DdaDdbDdcDddDdeDdfDe0De1De2DedDeeDefDf0Df1Df2Df3Df4Df5Df6Df7Df8Df9DfaDfbDfcDfdDfeDff" {
 	runMacro("FEI_Crop_Scalebar.ijm");
 }
 
 macro "FEI Crop Scalebar Action Tool Options" {
 	// options dialog
 	Dialog.create("FEI Crop Scalebar tool options");
-	Dialog.addCheckbox("Add scale bar", FEIaddSB);
 	Dialog.addCheckbox("Crop data bar", FEIdoCrop);
 	Dialog.addCheckbox("Use list from code for cropping value (legacy option)", FEIuseList);
 	Dialog.addCheckbox("Show metadata in log window", FEIshowMeta);
@@ -226,7 +211,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	Dialog.show();
 
 	// grab values
-	FEIaddSB = Dialog.getCheckbox();
 	FEIdoCrop = Dialog.getCheckbox();
 	FEIuseList = Dialog.getCheckbox();
 	FEIshowMeta = Dialog.getCheckbox();
@@ -234,7 +218,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	FEIextraCmd = Dialog.getString();
 
 	// store updated values
-	call("ij.Prefs.set", "sb.FEIaddSB", FEIaddSB);
 	call("ij.Prefs.set", "sb.FEIdoCrop", FEIdoCrop);
 	call("ij.Prefs.set", "sb.FEIuseList", FEIuseList);
 	call("ij.Prefs.set", "sb.FEIshowMeta", FEIshowMeta);
@@ -349,20 +332,15 @@ macro "Remove Overlays Tool Options" {
 } 
 */
 
-// --------------------------------------------- //
-// --------- Misc. Functions Menu Tool --------- //
-// --------------------------------------------- //
-var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Set image width and unit", "Calculate electron wavelength", "-", "Edit source code (advanced)", "Help"));
-macro "Misc. Functions Menu Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C444C333C222C111C000D23D24D27D28D2bD2cD33D34D37D38D3bD3cD43D44D47D48D4bD4cD53D54D57D58D5bD5cD63D64D67D68D6bD6cD73D74D77D78D7bD7cD83D84D87D88D8bD8cD93D94D97D98D9bD9cDa3Da4Da7Da8DabDacDb3Db4Db7Db8DbbDbcDc3Dc4Dc7Dc8DcbDccDd3Dd4Dd7Dd8DdbDdc" {
+// Drop down menu tool
+
+var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Help"));
+macro "Misc. Functions Menu Tool - C037T3f18?"{
 	cmd = getArgument();
 	if (cmd!="-" && cmd == "Set pixel size and unit") setPxAndUnit();
-	if (cmd!="-" && cmd == "Set image width and unit") setWidthAndUnit();
-	if (cmd!="-" && cmd == "Calculate electron wavelength") calcWav();
-	if (cmd!="-" && cmd == "Edit source code (advanced)") editSourceCode();
 	if (cmd!="-" && cmd == "Help") HelpMenu();
 }
 	
-
 
 // --------------------------------------------- //
 // ------------------ HOTKEYS ------------------ //
@@ -397,16 +375,11 @@ function addScalebar() {
 		h = getHeight();
 		facw = Math.ceil(rescale_target_px/w);
 		fach = Math.ceil(rescale_target_px/h);
-
-		//Handle stacks
-		d = 1;
-		if(nSlices > 1) d = nSlices;
-		
 		if(facw >= fach) {
-			run("Scale...", "x="+facw+" y="+facw+" width="+(facw*w)+" height="+(facw*h)+" depth="+d+" interpolation=None average process create");
+			run("Scale...", "x="+facw+" y="+facw+" width="+(facw*w)+" height="+(facw*h)+" interpolation=None average create");
 		}
 		else {
-			run("Scale...", "x="+fach+" y="+fach+" width="+(fach*w)+" height="+(fach*h)+" depth="+d+" interpolation=None average process create");
+			run("Scale...", "x="+fach+" y="+fach+" width="+(fach*w)+" height="+(fach*h)+" interpolation=None average create");
 		}
 		
 	}
@@ -439,19 +412,10 @@ function addScalebar() {
 	//Searches closest value from vals array to find sb width
 	if(auto_unit_switching) {
 		vals = newArray(1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
 	}
 	else {
 		vals = newArray(0.01, 0.02, 0.025, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
 	}
-	
 	//Get initial size of scalebar as percentage of image width
 	getPixelSize(unit, pw, ph);
 	imw = getWidth()*pw;
@@ -528,10 +492,9 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-
-	if(use_angstrom) {
+	
 	//nm -> Angstrom
-	if(val <= U && (unit == "nm")){
+	if(val <= U && (unit == 'nm')){
 		setVoxelSize(1E+1*pw, 1E+1*ph, 1, fromCharCode(0x0212b));
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
@@ -541,68 +504,12 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-
-	//Angstrom -> pm
-	if(val <= U && (unit == fromCharCode(0x0212b))){
-		setVoxelSize(1E+2*pw, 1E+2*ph, 1, "pm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
-
-	if(use_angstrom == false) {
-	//nm -> pm
-	if(val <= U && (unit == "nm")){
-		setVoxelSize(1E+3*pw, 1E+3*ph, 1, "pm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
 	
-
 	//Other direction starts from here
-
-	
-	if(use_angstrom == false) {
-	//pm -> nm
-	if(val >= U*1e3 && (unit == "pm")){
-		setVoxelSize(1E-3*pw, 1E-3*ph, 1, "nm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
-
-	if(use_angstrom) {
-	//pm -> Angstrom
-	if(val >= U*1e2 && (unit == "pm")) {
-		setVoxelSize(1E-2*pw, 1E-2*ph, 1, fromCharCode(0x0212b));
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
 	
 	//Angstrom -> nm
 	if(val >= U*1e1 && (unit == fromCharCode(0x0212b))) {
-		setVoxelSize(1E-1*pw, 1E-1*ph, 1, "nm");
+		setVoxelSize(1E-1*pw, 1E-1*ph, 1, 'nm');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
 		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
@@ -611,10 +518,9 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-	}
 	
 	//nm -> µm
-	if(val >= U*1e3 && (unit == "nm")){
+	if(val >= U*1e3 && (unit == 'nm')){
 		setVoxelSize(1E-3*pw, 1E-3*ph, 1, fromCharCode(0181)+'m');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
@@ -638,7 +544,7 @@ function unit_switcher(auto_unit_ref) {
 	}
 		
 	//mm -> m
-	if(val >= U*1e3 && (unit == "mm")){
+	if(val >= U*1e3 && (unit == 'mm')){
 		setVoxelSize(1E-3*pw, 1E-3*ph, 1, 'm');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
@@ -695,12 +601,11 @@ function getSelectedElements( ) {
   return selected; 
 } 
 
-// Set pixel size and unit 
-// Used to set image scale by a given pixel size. Default value is the current pixel size and length unit.
+// Set pixel size and unit...
 function setPxAndUnit() {
 	// Grab pixel size and unit from current image
 	getPixelSize(u, pw, ph);
-
+	
 	//Options dialog
 	Dialog.create("Set pixel size and unit");
 
@@ -709,7 +614,7 @@ function setPxAndUnit() {
 	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
 	
 	//Dialog.addMessage("Scalebar appearance", 15);
-	Dialog.addNumber("Pixel size: ", pw, 8, 10, "");
+	Dialog.addNumber("Pixel size: ", pw);
 	Dialog.addString("Unit: ", u);
 
 	Dialog.addCheckbox("Use special unit: ", false);
@@ -732,84 +637,9 @@ function setPxAndUnit() {
 		//if(eval(custom_string) != "") u_new = eval(custom_string);
 	}
 
+	//setVoxelSize(width, height, depth, unit);
 	setVoxelSize(pw_new, ph_new, 1, u_new);
 }
-
-// Set image width and unit 
-// Used to set image scale by a given image width. Default value is the current scaled image width and length unit.
-function setWidthAndUnit() {
-	// Grab pixel size and unit from current image
-	getPixelSize(u, pw, ph);
-	w_px = getWidth();
-	w = w_px*pw;
-	
-	//Options dialog
-	Dialog.create("Set image width and unit");
-
-	//Special character list
-	//Angstrom, Angstrom-1, nm-1
-	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
-	
-	//Dialog.addMessage("Scalebar appearance", 15);
-	Dialog.addNumber("Image width: ", w, 8, 10, "");
-	Dialog.addString("Unit: ", u);
-
-	Dialog.addCheckbox("Use special unit: ", false);
-	Dialog.addToSameRow();
-	Dialog.addChoice("", special, fromCharCode(0x0212b));
-	//Dialog.addString("Custom string:", "", 20);
-	
-	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
-	Dialog.show();
-	
-	//Grab values from UI
-	w_input = Dialog.getNumber();
-	pw_new = w_input/w_px;
-	ph_new = pw_new;
-	u_new = Dialog.getString();
-	//custom_string = Dialog.getString();
-
-	UseUnitFromMenu = Dialog.getCheckbox();
-	if(UseUnitFromMenu) {
-		u_new = Dialog.getChoice();
-		//if(eval(custom_string) != "") u_new = eval(custom_string);
-	}
-
-	setVoxelSize(pw_new, ph_new, 1, u_new);
-	
-}
-
-
-// Calculate relativistic electron wavelength
-function calcWav() {
-	//Options dialog
-	Dialog.create("Calculate electron wavelength");
-	
-	Dialog.addMessage("Calculate electron wavelength", 15);
-	Dialog.addNumber("Electron energy (keV): ", 30);
-	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
-	Dialog.show();
-	
-	//Grab values from UI
-	E = Dialog.getNumber();
-	
-	e0 = E*1e3*1.602176565e-19; // beam energy, J 
-	m0 = 9.1093837015e-31; // electron mass, kg
-	h = 6.62607015e-34; // Plancks constant, eV s
-	c = 299792458; // speed of light in vacuum, m/s
-	wav = h/Math.sqrt(2*m0*e0*(1.0+e0/(2.0*m0*c*c))); //relativistic wavelength, pm
-	print("Wavelength at "+E+" keV in pm: "+wav*1e12);
-}
-
-//Open source code (advanced)
-//Edit/adjust/inspect code
-function editSourceCode() {
-	SB_path = getDirectory("macros") + "\\toolsets\\" + "EMScaleBarTools.ijm";
-	FEImacro_path = getDirectory("macros") + "FEI_Crop_Scalebar.ijm";
-	run("Edit...", "open="+SB_path);
-	run("Edit...", "open="+FEImacro_path);
-}
-
 
 // Help Menu
 function HelpMenu() {
@@ -824,15 +654,12 @@ function HelpMenu() {
 	about=about + "\n---------------------------------------------------------------------------------";
 	about= about+"\nShort documentation:";
 	about=about+"\n";
-	about= about+"\n- \"QuickScaleBar\" tool: Creates a scale bar on a scaled image. Right click to open the options menu.";
+	about= about+"\n- \"QuickScaleBar\" (QSB) tool: Creates a scale bar on a scaled image. Right click to open the options menu.";
 	about= about+"\n- \"FEI Crop Scalebar\": Use it on FEI/TFS tiff files to crop data bar and add a scale bar based on QSB settings.";
 	about= about+"\n- \"Move Overlay\" tool: Enables fine-tuning of overlays (i.e.) scale bar position by mouse dragging.";
 	about= about+"\n- \"Remove Overlay\" tool: Remove all overlays from the image, including the scale bar.";
 	about= about+"\n- \"Misc. Functions\" menu: Drop-down menu with miscellaneous functions:";
-	about= about+"\n       \"Set pixel size and unit\": Scale image based on pixel size and unit.";
-	about= about+"\n       \"Set image width and unit\": Scale image based on image width and unit.";
-	about= about+"\n       \"Calculate electron wavelength\": Calculate relativistic de Broglie-wavelength from an electron energy.";
-	about= about+"\n       \"Edit source code\": Opens the source code in the editor.";
+	about= about+"\n       \"Set pixel size and unit:\" function: Scale image based on pixel size and unit.";
 	about=about + "\n---------------------------------------------------------------------------------";
 	about= about+"\nDefault hotkeys:";
 	about=about+"\n";
@@ -840,8 +667,8 @@ function HelpMenu() {
 	about= about+"\n- \"Save As PNG... [ p ]\": Save image as PNG.";
 	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard.";
 	about=about + "\n---------------------------------------------------------------------------------";
-	about=about +"\nVersion: "+version+"";
-	about=about +"\nAuthor: Lukas Gr"+fromCharCode(0x00FC)+"newald, "+date+", https://github.com/lukmuk/em-scalebartools";
+	about=about +"\nVersion: 0.21";
+	about=about +"\nAuthor: Lukas Gr"+fromCharCode(0x00FC)+"newald, 11/2021, https://github.com/lukmuk/em-scalebartools";
 
 	Dialog.addMessage(about);
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");

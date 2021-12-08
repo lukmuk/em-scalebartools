@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg30383"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="logos.svg">
+  <defs
+     id="defs30377">
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect42055"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect42011"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect41987"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect41947"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect41918"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <inkscape:path-effect
+       effect="skeletal"
+       id="path-effect41894"
+       is_visible="true"
+       lpeversion="1"
+       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
+       copytype="single_stretched"
+       prop_scale="1"
+       scale_y_rel="false"
+       spacing="0"
+       normal_offset="0"
+       tang_offset="0"
+       prop_units="false"
+       vertical_pattern="false"
+       hide_knot="false"
+       fuse_tolerance="0" />
+    <symbol
+       id="menu-alt">
+      <title
+         id="title31751">menu-alt</title>
+      <path
+         d="M 4.4979167,1.8520833 V 1.3229167 H 0.79375 v 0.5291666 z m 0,1.0583334 V 2.38125 H 0.79375 v 0.5291667 z m 0,1.0583333 V 3.4395833 H 0.79375 V 3.96875 Z"
+         id="path31753"
+         style="stroke-width:0.264583" />
+    </symbol>
+    <symbol
+       id="icon-drag">
+      <title
+         id="title37535">drag</title>
+      <path
+         d="M 0,2.38125 H 8.4666667 V 2.9104167 H 0 Z"
+         id="path37537"
+         style="stroke-width:0.264583" />
+      <path
+         d="M 0,3.96875 H 8.4666667 V 4.4979167 H 0 Z"
+         id="path37539"
+         style="stroke-width:0.264583" />
+      <path
+         d="M 0,5.55625 H 8.4666667 V 6.0854167 H 0 Z"
+         id="path37541"
+         style="stroke-width:0.264583" />
+    </symbol>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="543.76779"
+     inkscape:cy="266.57859"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="1272"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid41827" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata30380">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:1;fill:#e0e1f3;stroke-width:0.890533;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect32934"
+       width="21.166683"
+       height="21.166683"
+       x="83.34375"
+       y="62.177082"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="opacity:1;fill:#000000;stroke-width:0.240192;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect41829"
+       width="15.874999"
+       height="2.6458333"
+       x="85.989586"
+       y="66.145836"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="fill:#000000;stroke-width:0.240192;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect41829-1"
+       width="15.874999"
+       height="2.6458333"
+       x="85.989586"
+       y="71.4375"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="fill:#000000;stroke-width:0.240192;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect41829-3"
+       width="15.874999"
+       height="2.6458333"
+       x="85.989586"
+       y="76.729164"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="fill:#cd8282;stroke-width:0.890533;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect32934-3"
+       width="21.166683"
+       height="21.166683"
+       x="112.44791"
+       y="62.177078"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 112.44792,64.822917 v 15.875 h 1.32292 v -7.9375 l 5.29166,0 V 71.4375 l -5.29166,0 v -5.291667 l 6.61458,0 v -1.322916 z"
+       id="path41892"
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <g
+       id="g41922"
+       transform="translate(-1.32291)"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954">
+      <path
+         id="path41892-4"
+         style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 123.03125,64.822917 v 15.874999 h 1.32291 6.61459 V 79.375 h -6.61459 v -6.614583 h 6.61459 V 71.4375 h -6.61459 v -5.291667 h 6.61459 v -1.322916 z"
+         sodipodi:nodetypes="cccccccccccccc" />
+    </g>
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 132.29167,64.822917 v 15.875 h 1.32291 v -15.875 z"
+       id="path41945"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="fill:#e0e1f3;stroke-width:0.890533;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect32934-3-6"
+       width="21.166683"
+       height="21.166683"
+       x="141.55208"
+       y="62.177082"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png" />
+    <g
+       id="g41922-7"
+       transform="translate(30.42709,-1.3229163)"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954">
+      <path
+         id="path41892-4-2"
+         style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 123.03125,64.822917 -1e-5,14.552083 h 1.32292 l 5.29167,0 v -1.322917 l -5.29167,0 v -5.291666 l 5.29167,-10e-7 V 71.4375 l -5.29167,0 v -5.291667 l 5.29167,0 v -1.322917 z"
+         sodipodi:nodetypes="cccccccccccccc" />
+    </g>
+    <path
+       id="path41945-3"
+       style="fill:#000000;stroke:none;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 535.00001,300 v 15 h 5 v -5 h 70 v 5 h 5 v -15 h -5 v 5 l -70,0 v -5 z"
+       transform="scale(0.26458333)"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954"
+       sodipodi:nodetypes="ccccccccccccc" />
+    <path
+       id="path41985"
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 142.875,63.5 v 7.9375 h 6.61458 v 5.291667 h -5.29167 1e-5 -1.32292 v 0 1.322916 h 7.9375 v -7.9375 h -6.61459 v -5.291666 h 5.29167 v 0 h 1.32292 v 0 V 63.5 Z"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954"
+       sodipodi:nodetypes="ccccccccccccccccccc" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 160.07291,71.4375 h 1.32292 v 5.291667 h -1.32292 z"
+       id="path42009"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 160.07291,64.822917 h 1.32292 v 5.291667 h -1.32292 z"
+       id="path42009-0"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <rect
+       style="fill:#ffffff;stroke-width:0.25;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;stop-color:#000000"
+       id="rect42079-2"
+       width="1.3229166"
+       height="1.3229166"
+       x="149.48958"
+       y="59.53125" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.187088px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 149.48958,64.822917 h 1.32292 v 2.645833 h -1.32292 z"
+       id="path42009-0-1"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.187088px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 142.875,74.083334 h 1.32292 v 2.645833 H 142.875 Z"
+       id="path42009-0-1-7"
+       inkscape:export-filename="C:\Users\gruenewald\FEI.png"
+       inkscape:export-xdpi="614.39954"
+       inkscape:export-ydpi="614.39954" />
+  </g>
+</svg>
