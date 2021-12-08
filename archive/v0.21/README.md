@@ -54,12 +54,9 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 * Remove all overlays including the scale bar.
 
-##### Misc. Functions (Icon: =)
+##### Misc. Functions (Icon: ?)
 
-* `Set pixel size and unit`: Change image scale and unit based on pixel size (e.g. copied from DigitalMicrograph). Default values are fetched from the selected image. You can then specify the values directly. For the unit, you can also choose from a list of special units for electron microscopy from the `Use special unit` menu. The latter do not shown on my Windows system, but on Linux. Currently in the list: Å, Å$^{-1}$ , and nm$^{-1}$ .
-* `Set image width and unit`: Change image scale and unit based on image width. Other options as above.
-* `Calculate electron wavelength`: Calculate relativistic de Broglie wavelength for electrons for a given beam energy.
-* `Edit source code`: Opens the source code in the Fiji editor.
+* `Set pixel size and unit`: Change image scale and unit. Default values are fetched from the selected image. You can then specify the values directly. For the unit, you can also choose from a list of special units for electron microscopy from the `Use special unit` menu. The latter do not shown on my Windows system, but on Linux. Currently in the list: Å, Å$^{-1}$ , and nm$^{-1}$ .
 * `Help`: Opens the help menu.
 
 ## Requirements and Installation
@@ -86,7 +83,7 @@ Currently, only the system types `Helios G4 FX`, `Strata DB`, and `Quanta FEG` a
 
 Warning: Code is not optimized in any way, but should work (?). :-) 
 
-#### QuickScaleBar Options
+###### QuickScaleBar Options
 
 ``Relative height``: Height of scale bar wrt image height in pixel (default: ``0.02``, 2% of image height)
 
@@ -118,19 +115,13 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 
 ``U``: Unit switching factor (default: ``3``). Example: Will switch from µm to nm if image width is below 3 µm. Will switch from nm to µm if image width is larger than 3000 nm.
 
-`Use Angstrom`: Deselect to skip Angstrom between nm and pm.
-
 `Auto re-scale images`: If true/1, automatically rescale (using no interpolation/nearest interpolation) small image width or height to at least `rescale_target_px` value. (default: `0`, false). Useful to resize small cropped areas of larger images. This is the same as using `CTRL+E` and rescaling with `Interpolation: None`.
 
 `rescale_target_px`: Target minimum pixel size for `auto_rescale`. (default: `512`)
 
 `Run custom macro commands`: Run commands specified in next line (default: `false`). In the `Custom macro commands` field, multiple commands must be separated by `;`.
 
-`Consider additional scale bar values`: You can specify a comma-separated list of values which are considered for the scale bar width in addition to the default values (default: `false` and values `75,150` as an example)
-
-#### FEI Crop Scalebar Options
-
-`Add scale bar`:  Add scale bar to the FEI/TFS image (default: `true`). Deselect if you, e.g., just want to crop the data bar and scale the image. This can be useful in combination with batch mode to preprocess (scale and remove FEI data bar) a folder of images.
+###### FEI Crop Scalebar Options
 
 `Crop data bar`: Crop data bar of FEI/TFS image (default: `true`)
 
@@ -140,7 +131,7 @@ Warning: Code is not optimized in any way, but should work (?). :-)
 
 `Run custom macro commands`: Run commands specified in next line (default: `false`). In the `Custom macro commands` field, multiple commands must be separated by `;`.
 
-#### Hotkeys:
+###### Hotkeys:
 
 [ j ] - Save image as jpeg. Prompts for quality/compression factor.
 
@@ -173,27 +164,9 @@ The next GIF shows an example workflow when working with presentations (here Mic
 
 ## Changelog
 
-### v0.22
-
-* Slightly changed the icon styles.
-
-* The grabbed value for `Set pixel size and unit` for the current image is read-out with more decimals.
-
-* New function: `Set image width and unit` to scale the image based on known image width.
-
-* New function: `Calculate electron wavelength` from given beam energy. Will be posted to the log window.
-
-* New function: `Edit source code`. Advanced option to easily access/edit the source code.
-
-* New features for QuickScaleBar: The `Use Angstrom` option can be used to skip/ignore the Angstrom unit for `Auto-unit switching`. It will then switch directly from nm to pm.
-  
-  `Consider additional scale bar values` can be used to extend the dictionary of "magic values"" for the scale bar width to snap to.
-
-* New features for FEI Crop Scalebar: The new `Add scale bar` checkbox can be deselected to only crop/scale the FEI/TFS image.
-
 ### v0.21
 
-* Rewrote ``FEI_crop_scalebar.ijm `` to crop the FEI/TFS info bar based on the `[Scan] VerFieldSize` and `[Scan] PixelHeight` values. This should make the cropping work for every FEI/TFS machine as long as both values are found in the tiff metadata.
+* Rewrote ``FEI_crop_scalebar.ijm `` to crop the FEI/TFS info bar based on the `[Scan] VerFieldSize` and `[Scan]PixelHeight` values. This should make the cropping work for every FEI/TFS machine as long as both values are found in the tiff metadata.
 
 * Added an legacy option to use "list-based" cropping as in the old v0.2 version in the `FEI_crop_scalebar.ijm` option menu (`Use list from code for cropping value (legacy option)`). **Important: If your cropping does not work with the new version, copy your determined cropping values into the new if-clause in the code and activate the aforementioned menu option.**
 
@@ -202,6 +175,8 @@ The next GIF shows an example workflow when working with presentations (here Mic
 * A new function `Set pixel size and unit` was added to the drop-down menu. IT will fetch the values from the front-most image. You can then specify the values directly or use some special formats for electron microscopy from the `Use special unit`  menu. The latter do not shown on my Windows system, but on Linux. Currently in the list: Å, Å$^{-1}$, and nm$^{-1}$.
 
 * Updated the readme.
+  
+  
 
 ### v0.2
 

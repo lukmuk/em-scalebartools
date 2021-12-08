@@ -1,17 +1,23 @@
 /*
 IMPORTANT: This macro is meant to be used together with the "EMScaleBarTools.ijm" toolset.
-
 EMScaleBarTools is a suite of small functions to add a scale bar with reasonable size to a scaled image.
-It was developed with electron microscopy in mind and therefore the unit range spans (currently) from m to pm.
+It was developed with electron microscopy in mind and therefore the unit range spans (currently) only from m to pm.
 
-Installation:
+Installtion:
 1) Place "EMScaleBarTools.ijm" in Fiji -> macros -> toolsets folder.
 2) Place "FEI_Crop_Scalebar.ijm" in Fiji -> macros folder.
-3) Restart Fiji and select EMScaleBarTools from toolset (>>) menu.
-4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
+3) Restart Fiji and select EMScaleBarTools from toolset >> menu.
+
+The following macros are available as buttons:
+* QuickScaleBar (with right-click option menu): Add a scale bar to a scaled image. 
+* FEI Crop Scalebar: Crop FEI/TFS infobar at the bottom of the image, optionally perform image operations, and add a scale bar.
+	   Standalone macro to allow for batch processing.
+* Move Overlays: Drag and drop for overlays, directly copied from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
+* Remove Overlays: Remove all overlays (i.e. scale bars)
+* ?: Opens help dialog.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 12/2021, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, 11/2021, https://github.com/lukmuk/em-scalebartools
 
 */
 
@@ -34,16 +40,11 @@ sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Larger");
 auto_unit_switching = call("ij.Prefs.get", "sb.auto_unit_switching", true); //default true
 auto_unit_ref = call("ij.Prefs.get", "sb.auto_unit_ref", "Width");
 U = call("ij.Prefs.get", "sb.U", 3); // default 3
-use_angstrom = call("ij.Prefs.get", "sb.use_angstrom", true); //default true
 
 auto_rescale = call("ij.Prefs.get", "sb.auto_rescale", false); //default false
 rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //default 512
 
-doExtraSBvals = call("ij.Prefs.get", "sb.doExtraSBvals", false); //default false
-extraSBvals = call("ij.Prefs.get", "sb.extraSBvals", "75,150"); // default "75,150"
-
 //FEI CROP SCALEBAR
-FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
 FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
 FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
@@ -124,7 +125,7 @@ if(FEIdoCrop) {
 run("SEM FEI metadata Scale");
 
 // Add the scale bar
-if(FEIaddSB) addScalebar();
+addScalebar();
 
 //Optionally close log window with metadata
 if(FEIshowMeta == false) {
@@ -144,16 +145,11 @@ function addScalebar() {
 		h = getHeight();
 		facw = Math.ceil(rescale_target_px/w);
 		fach = Math.ceil(rescale_target_px/h);
-
-		//Handle stacks
-		d = 1;
-		if(nSlices > 1) d = nSlices;
-		
 		if(facw >= fach) {
-			run("Scale...", "x="+facw+" y="+facw+" width="+(facw*w)+" height="+(facw*h)+" depth="+d+" interpolation=None average process create");
+			run("Scale...", "x="+facw+" y="+facw+" width="+(facw*w)+" height="+(facw*h)+" interpolation=None average create");
 		}
 		else {
-			run("Scale...", "x="+fach+" y="+fach+" width="+(fach*w)+" height="+(fach*h)+" depth="+d+" interpolation=None average process create");
+			run("Scale...", "x="+fach+" y="+fach+" width="+(fach*w)+" height="+(fach*h)+" interpolation=None average create");
 		}
 		
 	}
@@ -186,19 +182,10 @@ function addScalebar() {
 	//Searches closest value from vals array to find sb width
 	if(auto_unit_switching) {
 		vals = newArray(1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
 	}
 	else {
 		vals = newArray(0.01, 0.02, 0.025, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
 	}
-	
 	//Get initial size of scalebar as percentage of image width
 	getPixelSize(unit, pw, ph);
 	imw = getWidth()*pw;
@@ -276,10 +263,9 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-
-	if(use_angstrom) {
+	
 	//nm -> Angstrom
-	if(val <= U && (unit == "nm")){
+	if(val <= U && (unit == 'nm')){
 		setVoxelSize(1E+1*pw, 1E+1*ph, 1, fromCharCode(0x0212b));
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
@@ -289,68 +275,12 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-
-	//Angstrom -> pm
-	if(val <= U && (unit == fromCharCode(0x0212b))){
-		setVoxelSize(1E+2*pw, 1E+2*ph, 1, "pm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
-
-	if(use_angstrom == false) {
-	//nm -> pm
-	if(val <= U && (unit == "nm")){
-		setVoxelSize(1E+3*pw, 1E+3*ph, 1, "pm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
 	
-
 	//Other direction starts from here
-
-	
-	if(use_angstrom == false) {
-	//pm -> nm
-	if(val >= U*1e3 && (unit == "pm")){
-		setVoxelSize(1E-3*pw, 1E-3*ph, 1, "nm");
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
-	}
-
-	if(use_angstrom) {
-	//pm -> Angstrom
-	if(val >= U*1e2 && (unit == "pm")) {
-		setVoxelSize(1E-2*pw, 1E-2*ph, 1, fromCharCode(0x0212b));
-		getPixelSize(unit, pw, ph);
-		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
-		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
-		if(auto_unit_ref == "Both") {
-		if(getWidth()*pw <= getHeight()*pw) {val = getWidth()*pw;}
-		else {val = getHeight()*pw;}
-		}
-	}
 	
 	//Angstrom -> nm
 	if(val >= U*1e1 && (unit == fromCharCode(0x0212b))) {
-		setVoxelSize(1E-1*pw, 1E-1*ph, 1, "nm");
+		setVoxelSize(1E-1*pw, 1E-1*ph, 1, 'nm');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
 		if(auto_unit_ref == "Height") {val = getHeight()*pw;}
@@ -359,10 +289,9 @@ function unit_switcher(auto_unit_ref) {
 		else {val = getHeight()*pw;}
 		}
 	}
-	}
 	
 	//nm -> µm
-	if(val >= U*1e3 && (unit == "nm")){
+	if(val >= U*1e3 && (unit == 'nm')){
 		setVoxelSize(1E-3*pw, 1E-3*ph, 1, fromCharCode(0181)+'m');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
@@ -386,7 +315,7 @@ function unit_switcher(auto_unit_ref) {
 	}
 		
 	//mm -> m
-	if(val >= U*1e3 && (unit == "mm")){
+	if(val >= U*1e3 && (unit == 'mm')){
 		setVoxelSize(1E-3*pw, 1E-3*ph, 1, 'm');
 		getPixelSize(unit, pw, ph);
 		if(auto_unit_ref == "Width") {val = getWidth()*pw;}
