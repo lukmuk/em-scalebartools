@@ -9,21 +9,26 @@ Installation:
 4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 12/2021, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, https://github.com/lukmuk/em-scalebartools
 
 */
 
-var date = "12/2021"
-var version = 0.22
+var date = "09/2022"
+var version = 0.3
 
-// Initalize variables or recover currrent values from presets
+//Initialize scale-bar parameters
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
 var sf = call("ij.Prefs.get", "sb.sf", 1); // default 1
 var wfac = call("ij.Prefs.get", "sb.wfac", 0.2);  // default 0.2
 var fsfac = call("ij.Prefs.get", "sb.fsfac", 3);  // default 2
 var col = call("ij.Prefs.get", "sb.col", "Black");  // default "Black"
-var bgcol = call("ij.Prefs.get", "sb.bg", "White");  // default "White"
+var bgcol = call("ij.Prefs.get", "sb.bgcol", "None");  // default "White"
 var loc = call("ij.Prefs.get", "sb.loc", "Lower Right");  // default "Lower Right"
+var switched = call("ij.Prefs.get", "sb.switched", false); //default false
+
+var len = call("ij.Prefs.get", "sb.len", 1.0); 
+var height = call("ij.Prefs.get", "sb.height", 1.0); 
+var fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0); 
 
 var bold = call("ij.Prefs.get", "sb.bold", true); //default true
 var overlay = call("ij.Prefs.get", "sb.overlay", true); //default true
@@ -39,26 +44,16 @@ var use_angstrom = call("ij.Prefs.get", "sb.use_angstrom", true); //default true
 
 var auto_rescale = call("ij.Prefs.get", "sb.auto_rescale", false); //default false
 var rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //default 512
-//var rescale_create = call("ij.Prefs.get", "sb.rescale_create", true); //default true
 
 var doExtraCmd = call("ij.Prefs.get", "sb.doExtraCmd", false); //default false
 var extraCmd = call("ij.Prefs.get", "sb.extraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
 
-var doExtraSBvals = call("ij.Prefs.get", "sb.doExtraSBvals", false); //default false
-var extraSBvals = call("ij.Prefs.get", "sb.extraSBvals", "75,150"); // default "75,150"
-
 //FEI CROP SCALEBAR
 var FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
 var FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
-var FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 var FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
 var FEIdoExtraCmd = call("ij.Prefs.get", "sb.FEIdoExtraCmd", false); //default false
 var FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
-
-//REMOVE OVERLAYS TOOL
-//var doDeleteAll = call("ij.Prefs.get", "sb.doDeleteAll", true); //default true
-
-//var restore_defaults = call("ij.Prefs.get", "sb.restore_defaults", false); //default false
 
 // --------------------------------------------- //
 // --------------- QuickScaleBar --------------- //
@@ -68,11 +63,12 @@ macro "QuickScaleBar Action Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C
 	addScalebar();
 }
 
-macro "QuickScaleBar Action Tool Options" {
-	//Options dialog
+macro "QuickScaleBar Action Tool Options [n*]" {
+
+	// Options dialog
 	Dialog.create("QuickScaleBar tool options");
 
-	//Choices for some dialog options
+	// Choices for some dialog options
 	locs = newArray("Upper Right", "Lower Right", "Lower Left", "Upper Left", "At Selection");
 	colors = newArray("White", "Black", "Gray", "Red", "Green", "Blue");
 	colors_bg = newArray("None", "White", "Black", "Gray");
@@ -80,7 +76,6 @@ macro "QuickScaleBar Action Tool Options" {
 	sb_size_refs = newArray("Larger", "Smaller", "Width", "Height");
 	auto_unit_refs = newArray("Width", "Height", "Both");
 	
-	//Dialog.addMessage("Scalebar appearance", 15);
 	Dialog.addNumber("Relative height: ", hfac);
 	Dialog.addToSameRow();
 	Dialog.addNumber("Scaling factor: ", sf);
@@ -98,8 +93,6 @@ macro "QuickScaleBar Action Tool Options" {
 	Dialog.addCheckbox("Hide Text (Creates image with scalebar length in title)", hide);
 	
 	Dialog.addChoice("Scalebar size reference:", sb_size_refs, sb_size_ref);
-	
-	//Dialog.addMessage("Advanced settings:", 15);
 	Dialog.addCheckbox("Auto unit-switching", auto_unit_switching);
 	Dialog.addToSameRow();
 	Dialog.addChoice("Check:", auto_unit_refs, auto_unit_ref);
@@ -107,23 +100,15 @@ macro "QuickScaleBar Action Tool Options" {
 	Dialog.addNumber("Unit factor: ", U);
 	Dialog.addToSameRow();
 	Dialog.addCheckbox("Use Angstrom", use_angstrom);
-	
 	Dialog.addCheckbox("Auto re-scale images", auto_rescale);
 	Dialog.addToSameRow();
 	Dialog.addNumber("Min. height/width (pixels): ", rescale_target_px);
-	//Dialog.addToSameRow();
-	//Dialog.addCheckbox("Create window", rescale_create);
 	Dialog.addCheckbox("Run custom macro commands", doExtraCmd);
 	Dialog.addString("Custom macro commands:", extraCmd, 70);
-	//Dialog.addCheckbox("Restore default settings", restore_defaults);
-
-	Dialog.addCheckbox("Consider additional scale bar values (separate with comma without spaces)", doExtraSBvals);
-	Dialog.addString("Custom scale bar values:", extraSBvals, 70);
-	
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
 	Dialog.show();
 	
-	//Grab values from UI
+	// Grab values from UI
 	hfac = Dialog.getNumber();
 	sf = Dialog.getNumber();
 	wfac = Dialog.getNumber();
@@ -148,22 +133,13 @@ macro "QuickScaleBar Action Tool Options" {
 	doExtraCmd = Dialog.getCheckbox();
 	extraCmd = Dialog.getString(); 
 
-	doExtraSBvals = Dialog.getCheckbox();
-	extraSBvals = Dialog.getString(); 
-	
-	//rescale_create = Dialog.getCheckbox();
-
-	//Check if defaults should be restored
-	//restore_defaults = Dialog.getCheckbox();
-	//print(restore_defaults);
-	
 	// store updated values for future use
 	call("ij.Prefs.set", "sb.hfac", hfac); // default 0.02
 	call("ij.Prefs.set", "sb.sf", sf); // default 1
 	call("ij.Prefs.set", "sb.wfac", wfac);  // default 0.2
 	call("ij.Prefs.set", "sb.fsfac", fsfac);  // default 2
 	call("ij.Prefs.set", "sb.col", col);  // default "Black"
-	call("ij.Prefs.set", "sb.bg", bgcol);  // default "White"
+	call("ij.Prefs.set", "sb.bgcol", bgcol);  // default "White"
 	call("ij.Prefs.set", "sb.loc", loc);  // default "Lower Right"
 	call("ij.Prefs.set", "sb.bold", bold); //default true
 	call("ij.Prefs.set", "sb.overlay", overlay); //default true
@@ -176,33 +152,11 @@ macro "QuickScaleBar Action Tool Options" {
 	call("ij.Prefs.set", "sb.use_angstrom", use_angstrom); //default true
 	call("ij.Prefs.set", "sb.auto_rescale", auto_rescale);  // default false
 	call("ij.Prefs.set", "sb.rescale_target_px", rescale_target_px);  // default 512
-	//call("ij.Prefs.set", "sb.rescale_create", rescale_create);  // default true
 	call("ij.Prefs.set", "sb.doExtraCmd", doExtraCmd);
 	call("ij.Prefs.set", "sb.extraCmd", extraCmd);
-	call("ij.Prefs.set", "sb.doExtraSBvals", doExtraSBvals);
-	call("ij.Prefs.set", "sb.extraSBvals", extraSBvals);
 
-	/*
-	//restore default settings if restore_defaults
-	if(restore_defaults) {
-		call("ij.Prefs.set", "sb.hfac", 0.02); // default 0.02
-		call("ij.Prefs.set", "sb.wfac", 0.2);  // default 0.2
-		call("ij.Prefs.set", "sb.fsfac", 2);  // default 2
-		call("ij.Prefs.set", "sb.col", "Black");  // default "Black"
-		call("ij.Prefs.set", "sb.bg", "White");  // default "White"
-		call("ij.Prefs.set", "sb.loc", "Lower Right");  // default "Lower Right"
-		call("ij.Prefs.set", "sb.bold", true); //default true
-		call("ij.Prefs.set", "sb.overlay", true); //default true
-		call("ij.Prefs.set", "sb.serif", false); //default false
-		call("ij.Prefs.set", "sb.hide", false); //default false
-		call("ij.Prefs.set", "sb.auto_unit_switching", true);  // default true
-		call("ij.Prefs.set", "sb.U", 3);  // default 3
-		call("ij.Prefs.set", "sb.auto_rescale", false);  // default false
-		call("ij.Prefs.set", "sb.rescale_target_px", 512);  // default 512
-		//call("ij.Prefs.set", "sb.rescale_create", rescale_create);  // default true
-		call("ij.Prefs.set", "sb.restore_defaults", false);  // default false
-	}
-	*/
+	// Update scale bar
+	addScalebar();
 }
 
 // --------------------------------------------- //
@@ -218,7 +172,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	Dialog.create("FEI Crop Scalebar tool options");
 	Dialog.addCheckbox("Add scale bar", FEIaddSB);
 	Dialog.addCheckbox("Crop data bar", FEIdoCrop);
-	Dialog.addCheckbox("Use list from code for cropping value (legacy option)", FEIuseList);
 	Dialog.addCheckbox("Show metadata in log window", FEIshowMeta);
 	Dialog.addCheckbox("Run custom macro commands", FEIdoExtraCmd);
 	Dialog.addString("Custom macro commands:", FEIextraCmd, 30);
@@ -228,7 +181,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	// grab values
 	FEIaddSB = Dialog.getCheckbox();
 	FEIdoCrop = Dialog.getCheckbox();
-	FEIuseList = Dialog.getCheckbox();
 	FEIshowMeta = Dialog.getCheckbox();
 	FEIdoExtraCmd = Dialog.getCheckbox();
 	FEIextraCmd = Dialog.getString();
@@ -236,7 +188,6 @@ macro "FEI Crop Scalebar Action Tool Options" {
 	// store updated values
 	call("ij.Prefs.set", "sb.FEIaddSB", FEIaddSB);
 	call("ij.Prefs.set", "sb.FEIdoCrop", FEIdoCrop);
-	call("ij.Prefs.set", "sb.FEIuseList", FEIuseList);
 	call("ij.Prefs.set", "sb.FEIshowMeta", FEIshowMeta);
 	call("ij.Prefs.set", "sb.FEIdoExtraCmd", FEIdoExtraCmd);
 	call("ij.Prefs.set", "sb.FEIextraCmd", FEIextraCmd);
@@ -246,7 +197,7 @@ macro "FEI Crop Scalebar Action Tool Options" {
 // --------------------------------------------- //
 // ------------- Move Overlay tool ------------- //
 // --------------------------------------------- //
-//Copied from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
+// Copied from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
 
 macro "Move Overlay Tool - C037O33aaL03f3L303f" { 
   getCursorLoc( x, y, z, flags ); 
@@ -313,51 +264,17 @@ macro "Remove Overlays Action Tool - C037R00ddB58Cd00L0088L0880" {
 	run("Remove Overlay");
 }
 
-/* Under development, might replace 
-macro "Remove Overlays Tool - C037R00ddB58Cd00L0088L0880" { 
-	 if(doDeleteAll) run("Remove Overlay");
-	 else {
-	 	  getCursorLoc( x, y, z, flags ); 
-		  selectNone( ); 
-		  call( 'ij.Prefs.set', 'overlaytoolset.selected', '' ); 
-		  id = Overlay.indexAt( x, y ); 
-		  if( id != - 1 ) { 
-		  showWarning = call( "ij.Prefs.get", "overlaytoolset.deletewarning", true ); 
-		  mustDelete = true; 
-		  if( showWarning == true ) { 
-	      Dialog.create( "Delete ROI tool options" ); 
-	      Dialog.addCheckbox( "Delete this ROI", true ); 
-	      Dialog.addCheckbox( "Show this dialog", showWarning ); 
-	      Dialog.show( );  
-	      mustDelete = Dialog.getCheckbox( ); 
-	      showWarning = Dialog.getCheckbox( ); 
-	      call( "ij.Prefs.set", "overlaytoolset.deletewarning", showWarning ); 
-    	  } 
-    	if( mustDelete ) Overlay.removeSelection( id ); 
-  		} 
-	 }
-}
-
-macro "Remove Overlays Tool Options" {
-	Dialog.create("Remove Overlays options");
-	Dialog.addCheckbox("Delete all overlays on click", doDeleteAll);
-	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
-	Dialog.show();
-
-	doDeleteAll = Dialog.getCheckbox();
-	call("ij.Prefs.set", "sb.doDeleteAll", doDeleteAll);	
-} 
-*/
-
 // --------------------------------------------- //
 // --------- Misc. Functions Menu Tool --------- //
 // --------------------------------------------- //
-var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Set image width and unit", "Calculate electron wavelength", "-", "Edit source code (advanced)", "Help"));
+var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Set image width and unit", "Calculate electron wavelength", "-","Export scale-bar parameters", "Import scale-bar parameters", "Edit source code (advanced)", "Help"));
 macro "Misc. Functions Menu Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C444C333C222C111C000D23D24D27D28D2bD2cD33D34D37D38D3bD3cD43D44D47D48D4bD4cD53D54D57D58D5bD5cD63D64D67D68D6bD6cD73D74D77D78D7bD7cD83D84D87D88D8bD8cD93D94D97D98D9bD9cDa3Da4Da7Da8DabDacDb3Db4Db7Db8DbbDbcDc3Dc4Dc7Dc8DcbDccDd3Dd4Dd7Dd8DdbDdc" {
 	cmd = getArgument();
 	if (cmd!="-" && cmd == "Set pixel size and unit") setPxAndUnit();
 	if (cmd!="-" && cmd == "Set image width and unit") setWidthAndUnit();
 	if (cmd!="-" && cmd == "Calculate electron wavelength") calcWav();
+	if (cmd!="-" && cmd == "Export scale-bar parameters") exportEMScaleBarToolsParams();
+	if (cmd!="-" && cmd == "Import scale-bar parameters") importEMScaleBarToolsParams();
 	if (cmd!="-" && cmd == "Edit source code (advanced)") editSourceCode();
 	if (cmd!="-" && cmd == "Help") HelpMenu();
 }
@@ -368,7 +285,8 @@ macro "Misc. Functions Menu Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C
 // ------------------ HOTKEYS ------------------ //
 // --------------------------------------------- //
 
-//JPEG saving, please do not use for publications...
+
+// JPEG saving
 macro "Save As JPEG... [j]" {
 	quality = call("ij.plugin.JpegWriter.getQuality");
 	quality = getNumber("JPEG quality (0-100):", quality);
@@ -376,14 +294,212 @@ macro "Save As JPEG... [j]" {
 	saveAs("Jpeg");
 }
 
-//PNG saving
+// PNG saving
 macro "Save As PNG... [p]" {
 	saveAs("PNG");
 }
 
-//"Copy to system shortcut" to quickly copy to other programs
+// "Copy to system shortcut" -> quickly copy to other programs
 macro "Copy to system... [c]" {
 	run("Copy to System");
+}
+
+// Add scale bar
+// ALT: Invert color
+macro "Add Scale Bar [n5]"{
+	//Invert color if ALT is pressed
+	if(isKeyDown("alt")) {
+		//Get current values
+		col = call("ij.Prefs.get", "sb.col", "Black");
+		bgcol = call("ij.Prefs.get", "sb.bgcol", "White");  
+		
+		while(true) {
+			if(col == "Black" && bgcol == "None") {
+				col = "White";
+				break;
+			}
+			if(col == "White" && bgcol == "None") {
+				col = "Black";
+				break;
+			}
+			if(col == "Black" && bgcol == "White") {
+				col = "White";
+				bgcol = "Black";
+				break;
+			}
+			if(col == "White" && bgcol == "Black") {
+				col = "Black";
+				bgcol = "White";
+				break;
+			}
+			break;
+		}
+
+		//Set value
+		call("ij.Prefs.set", "sb.col", col);
+		call("ij.Prefs.set", "sb.bgcol", bgcol); 
+		updateScalebar();
+	}
+
+	//Toggle scale-bar on/off
+	else {
+		if(OverlaysPresent()) run("Remove Overlay");
+		else updateScalebar();
+	}
+}
+
+// Decrease scale-bar size
+// ALT: Specify scale-bar size from user input by modifying size factor sf
+macro "Shrink Scale Bar [n2]"{
+	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
+	if(isKeyDown("alt")) {
+		//Set scaling factor from user input
+		Dialog.create("Set scale bar length");
+
+		//Dialog.addMessage("Scalebar appearance", 15);
+		Dialog.addNumber("Set scaling factor: ", sf_old, 2, 10, "");
+
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.show();
+
+		//Grab values from UI
+		sf_new = Dialog.getNumber();
+	}
+	else {
+		sf_new = sf_old - 0.1;
+	}
+	call("ij.Prefs.set", "sb.sf", sf_new);
+	updateScalebar();
+}
+
+// Increase scale-bar size
+// ALT: Specify scale-bar size from user input by modifying size factor sf
+macro "Enlarge Scale Bar Numpad [n8]" {
+	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
+	if(isKeyDown("alt")) {
+		//Set scaling factor from user input
+		Dialog.create("Set scale bar length");
+			
+		//Dialog.addMessage("Scalebar appearance", 15);
+		Dialog.addNumber("Set scaling factor: ", sf_old, 2, 10, "");
+	
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.show();
+		
+		//Grab values from UI
+		sf_new = Dialog.getNumber();
+	}
+	else {
+		sf_new = sf_old + 0.1;
+	}
+	call("ij.Prefs.set", "sb.sf", sf_new);
+	updateScalebar();
+}
+
+// Increase scale-bar length in measurement units in 1-2-5 series
+// ALT: Specify scale-bar length from user input in length units
+macro "Increase Scale Bar Size Increment [n6]" {
+	scalebarlen = parseFloat(call("ij.Prefs.get", "sb.len", 1.0));
+	height = call("ij.Prefs.get", "sb.height", 1.0);
+	fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0);
+
+	scalebarlen_new = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
+
+	//Set scale-bar length from user input
+	if(isKeyDown("alt")) {
+		Dialog.create("Set scale bar length");
+			
+		//Dialog.addMessage("Scalebar appearance", 15);
+		Dialog.addNumber("Set scale-bar length: ", scalebarlen, 2, 10, "");
+	
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.show();
+		
+		//Grab values from UI
+		scalebarlen_new = Dialog.getNumber();
+	}
+
+	// Update len
+	call("ij.Prefs.set", "sb.len", scalebarlen_new)
+	updateScalebar();
+}
+
+// Decrease scale-bar length in measurement units in 1-2-5 series
+// ALT: Specify scale-bar length from user input in length units
+macro "Decrease Scale Bar Size Increment [n4]" {
+	scalebarlen = parseFloat(call("ij.Prefs.get", "sb.len", 1.0));
+	height = call("ij.Prefs.get", "sb.height", 1.0);
+	fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0);
+
+	scalebarlen_new = scalebarlen/10;
+	while (1)  {
+	 	tmp = round((scalebarlen_new*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen_new*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen_new*2.3))))));
+		if (tmp >= scalebarlen) {
+			break;
+		}
+		else {
+			scalebarlen_new = tmp;
+		}
+	}
+
+	// Set scale-bar length from user input
+	if(isKeyDown("alt")) {
+		Dialog.create("Set scale bar length");
+		Dialog.addNumber("Set scale-bar length: ", scalebarlen, 2, 10, "");
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.show();
+		
+		// Grab values from UI
+		scalebarlen_new = Dialog.getNumber();
+	}
+	
+	// Update len
+	call("ij.Prefs.set", "sb.len", scalebarlen_new)
+	updateScalebar();
+
+}
+
+
+// Set scale-bar position via numpad keys
+macro "Scale Bar Lower Right [n3]" {
+	call("ij.Prefs.set", "sb.loc", "Lower Right");
+	updateScalebar();
+}
+
+macro "Scale Bar Upper Right [n9]" {
+	call("ij.Prefs.set", "sb.loc", "Upper Right");
+	updateScalebar();
+}
+
+macro "Scale Bar Lower Left [n1]" {
+	call("ij.Prefs.set", "sb.loc", "Lower Left");
+	updateScalebar();
+}
+
+macro "Scale Bar Upper Left [n7]" {
+	call("ij.Prefs.set", "sb.loc", "Upper Left");
+	updateScalebar();
+}
+
+// Reset scale bar location to "Lower Right" and scaling factor back to 1.0
+macro "Reset Scale Bar [n0]" {
+	call("ij.Prefs.set", "sb.loc", "Lower Right");
+	call("ij.Prefs.set", "sb.sf", 1.0);
+	updateScalebar();
+}
+
+// Switch vertical positions of the scale bar and the label
+macro "Switch Scale Bar and Label [t]" {
+	switched = call("ij.Prefs.get", "sb.switched", false);
+	if(switched) {
+		run("Remove Overlay");
+		call("ij.Prefs.set", "sb.switched", false);
+	}
+	else {
+		run("Remove Overlay");
+		call("ij.Prefs.set", "sb.switched", true);
+	}
+	updateScalebar();
 }
 
 // --------------------------------------------- //
@@ -391,14 +507,29 @@ macro "Copy to system... [c]" {
 // --------------------------------------------- //
 
 function addScalebar() {
-	//Auto rescale images below rescale_target_px
+	/* 
+	Function to calculate size and position of a scale bar.
+	Adds it to the currently selected image.
+	*/
+	
+	
+	// Check if any image is present. If not, exit function by returning 0
+	if(nImages==0) return 0
+
+	// Get current parameter values which may be changed by other functions
+	sf = parseFloat(call("ij.Prefs.get", "sb.sf", 1));
+	loc = call("ij.Prefs.get", "sb.loc", "Lower Right");
+	switched = call("ij.Prefs.get", "sb.switched", false);
+	if(switched) run("Remove Overlay");
+	
+	// Auto rescale images below rescale_target_px
 	if(auto_rescale && (getWidth() < rescale_target_px || getHeight() < rescale_target_px)) {
 		w = getWidth();
 		h = getHeight();
 		facw = Math.ceil(rescale_target_px/w);
 		fach = Math.ceil(rescale_target_px/h);
 
-		//Handle stacks
+		// Handle stacks, i.e. add scale bar to all images in a stack
 		d = 1;
 		if(nSlices > 1) d = nSlices;
 		
@@ -411,13 +542,13 @@ function addScalebar() {
 		
 	}
 
-	//Switch units
-	if(auto_unit_switching) unit_switcher(auto_unit_ref);
+	// Switch length units
+	if(auto_unit_switching) UnitSwitcher(auto_unit_ref);
 
-	//Run extra commands
+	// Run extra commands
 	if (doExtraCmd) eval(extraCmd);
 
-	//Calculate height of scalebar
+	// Calculate height in pixels of scale bar
 	if(sb_size_ref == "Larger") {
 		if(getHeight() >= getWidth()) {height = round(getHeight()*hfac);}
 		else {height = round(getWidth()*hfac);}
@@ -432,40 +563,30 @@ function addScalebar() {
 	// Multiply height with scaling factor
 	height = height * sf;
 
-	//Calculate fontsize
+	// Calculate fontsize
 	fontsize = height * fsfac;
-	
-	//Set width of scalebar
-	//Searches closest value from vals array to find sb width
-	if(auto_unit_switching) {
-		vals = newArray(1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
-	}
-	else {
-		vals = newArray(0.01, 0.02, 0.025, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
-	}
-	
-	//Get initial size of scalebar as percentage of image width
-	getPixelSize(unit, pw, ph);
-	imw = getWidth()*pw;
-	sb_w = round(wfac*imw);
-	
-	//Find next smaller value to sb_w in vals
-	index = 0;
-	for (i=0; i<vals.length; i++)
-		if(sb_w > vals[i])
-			index = i;
-			continue;
-		break;
 
-	//Other cosmetics
+	// Calculate scale-bar size using a 1-2-5 series
+	// Code by Ales Kladnik (aleskl)  
+	
+	getPixelSize(unit,w_px,h_px);
+	imw = w_px*getWidth(); // image width in measurement units
+	
+	scalebarlen = 0.01*imw; // initial scale bar length in measurement units
+	maxscalebarlen = imw * wfac; // maximum scale bar width in measurement units
+	
+	// recursively calculate a 1-2-5 series until the length reaches scalebarsize, default to 1/10th of image width
+	// 1-2-5 series is calculated by repeated multiplication with 2.3, rounded to one significant digit
+	while (scalebarlen < maxscalebarlen) {
+		scalebarlen = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
+	}
+
+	// Update len variable with found scale-bar length, required for other macros
+	call("ij.Prefs.set", "sb.len", scalebarlen);
+	call("ij.Prefs.set", "sb.height", height); 
+	call("ij.Prefs.set", "sb.fontsize", fontsize); 
+
+	// Other cosmetics
 	b=""; //bold
 	o=""; //overlay
 	h=""; //hide text
@@ -475,16 +596,71 @@ function addScalebar() {
 	if(hide) h="hide";
 	if(serif) s="serif";
 	
-	//Run scale bar command
-	run("Scale Bar...", "width="+vals[index]+" height="+height+" font="+fontsize+" color="+col+" background="+bgcol+" location=["+loc+"] "+b+" "+h+" "+s+" "+o);
+	// Run ImageJ scale-bar command
+	run("Scale Bar...", "width="+scalebarlen+" height="+height+" font="+fontsize+" color="+col+" background="+bgcol+" location=["+loc+"] "+b+" "+h+" "+s+" "+o);
+	
+	// Flip vertical positions of scale bar and the label
+	if(switched) switchScaleBarLabel();
+	
+	// Hide label
 	if(hide) {
 		if(auto_rescale) name = getTitle();
 		run("Duplicate...", "title="+substring(getTitle(), 0, lastIndexOf(getTitle(), '.'))+"_scale-"+vals[index]+unit+".tif");
 		if(auto_rescale) close(name);
+	}
 }
 
-function unit_switcher(auto_unit_ref) {
-	//Get scaled image size
+function updateScalebar() {
+	/* 
+	Function to update/redraw the scale bar.
+	*/
+
+	// Get current parameter values which may be changed by other functions
+	sf = parseFloat(call("ij.Prefs.get", "sb.sf", 1));
+	fsfac = parseFloat(call("ij.Prefs.get", "sb.fsfac", 3));
+	loc = call("ij.Prefs.get", "sb.loc", "Lower Right");
+	scalebarlen = call("ij.Prefs.get", "sb.len", 1.0);
+	height = parseFloat(call("ij.Prefs.get", "sb.height", 1.0));
+	height = height * sf;
+	fontsize = parseFloat(call("ij.Prefs.get", "sb.fontsize", 1.0));
+	fontsize = fontsize * sf;
+
+	col = call("ij.Prefs.get", "sb.col", "Black");
+	bgcol = call("ij.Prefs.get", "sb.bgcol", "White");  
+	switched = call("ij.Prefs.get", "sb.switched", false);
+	if(switched) run("Remove Overlay");
+
+	// Other cosmetics
+	b=""; //bold
+	o=""; //overlay
+	h=""; //hide text
+	s=""; //serif font
+	if(bold) b="bold";
+	if(overlay) o="overlay";
+	if(hide) h="hide";
+	if(serif) s="serif";
+
+	// Run ImageJ scale-bar command
+	run("Scale Bar...", "width="+scalebarlen+" height="+height+" font="+fontsize+" color="+col+" background="+bgcol+" location=["+loc+"] "+b+" "+h+" "+s+" "+o);
+	
+	// Flip vertical positions of scale bar and the label
+	if(switched) switchScaleBarLabel();
+	
+	// Hide label
+	if(hide) {
+		if(auto_rescale) name = getTitle();
+		run("Duplicate...", "title="+substring(getTitle(), 0, lastIndexOf(getTitle(), '.'))+"_scale-"+vals[index]+unit+".tif");
+		if(auto_rescale) close(name);
+	}
+}
+
+function UnitSwitcher(auto_unit_ref) {
+	/* 
+	Function to switch the length units automatically. The value of auto_unit_ref is used to decide when to switch.
+	E.g. auto_unit_ref = 3 will switch images with a width of >3000 nm to um, or images with a width of <3 um to nm.
+	*/
+	
+	// Get scaled image size
 	getPixelSize(unit, pw, ph);
 	if(auto_unit_ref == "Width") {val = getWidth()*pw;}
 	if(auto_unit_ref == "Height") {val = getHeight()*pw;}
@@ -570,9 +746,7 @@ function unit_switcher(auto_unit_ref) {
 	}
 	
 
-	//Other direction starts from here
-
-	
+	// Other direction starts from here
 	if(use_angstrom == false) {
 	//pm -> nm
 	if(val >= U*1e3 && (unit == "pm")){
@@ -650,13 +824,14 @@ function unit_switcher(auto_unit_ref) {
 	}
 }
 
-//Helper function for overlay tools
-//from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
+// Helper function for overlay tools
+// from: https://imagej.nih.gov/ij/source/macros/Overlay%20Editing%20Tools.txt
 function selectNone( ) { 
   Overlay.removeRois( 'ToolSelectedOverlayElement' ); 
   Overlay.show; 
   //call( 'ij.Prefs.set', 'overlaytoolset.selected', '' ); 
 } 
+
 function selectElement( id, add ) { 
   if( add == true ) { 
     selected = getSelectedElements( ); 
@@ -676,6 +851,7 @@ function selectElement( id, add ) {
   } 
   highlightSelectedROIs( ); 
 } 
+
 function unselectElement( id ) { 
   selected = getSelectedElements( ); 
   s = split( selected, ',' ); 
@@ -687,7 +863,8 @@ function unselectElement( id ) {
   selected = getSelectedElements( ); 
   highlightSelectedROIs( ); 
   run( "Select None" ); 
-} 
+}
+
 function getSelectedElements( ) { 
   selected = call( 'ij.Prefs.get', 'overlaytoolset.selected', '' ); 
   while( selected.endsWith( "," ) ) selected = substring( selected, 0, lengthOf( selected )- 1 ); 
@@ -701,35 +878,28 @@ function setPxAndUnit() {
 	// Grab pixel size and unit from current image
 	getPixelSize(u, pw, ph);
 
-	//Options dialog
+	// Options dialog
 	Dialog.create("Set pixel size and unit");
 
-	//Special character list
-	//Angstrom, Angstrom-1, nm-1
+	// Special character list
+	// Angstrom, Angstrom-1, nm-1
 	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
 	
-	//Dialog.addMessage("Scalebar appearance", 15);
 	Dialog.addNumber("Pixel size: ", pw, 8, 10, "");
 	Dialog.addString("Unit: ", u);
-
 	Dialog.addCheckbox("Use special unit: ", false);
 	Dialog.addToSameRow();
 	Dialog.addChoice("", special, fromCharCode(0x0212b));
-	//Dialog.addString("Custom string:", "", 20);
-	
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
 	Dialog.show();
 	
-	//Grab values from UI
+	// Grab values from UI
 	pw_new = Dialog.getNumber();
 	ph_new = pw_new;
 	u_new = Dialog.getString();
-	//custom_string = Dialog.getString();
-
 	UseUnitFromMenu = Dialog.getCheckbox();
 	if(UseUnitFromMenu) {
 		u_new = Dialog.getChoice();
-		//if(eval(custom_string) != "") u_new = eval(custom_string);
 	}
 
 	setVoxelSize(pw_new, ph_new, 1, u_new);
@@ -746,51 +916,43 @@ function setWidthAndUnit() {
 	//Options dialog
 	Dialog.create("Set image width and unit");
 
-	//Special character list
-	//Angstrom, Angstrom-1, nm-1
+	// Special character list
+	// Angstrom, Angstrom-1, nm-1
 	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
 	
-	//Dialog.addMessage("Scalebar appearance", 15);
+	// Dialog.addMessage("Scalebar appearance", 15);
 	Dialog.addNumber("Image width: ", w, 8, 10, "");
 	Dialog.addString("Unit: ", u);
-
 	Dialog.addCheckbox("Use special unit: ", false);
 	Dialog.addToSameRow();
 	Dialog.addChoice("", special, fromCharCode(0x0212b));
-	//Dialog.addString("Custom string:", "", 20);
-	
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
 	Dialog.show();
 	
-	//Grab values from UI
+	// Grab values from UI
 	w_input = Dialog.getNumber();
 	pw_new = w_input/w_px;
 	ph_new = pw_new;
 	u_new = Dialog.getString();
-	//custom_string = Dialog.getString();
 
 	UseUnitFromMenu = Dialog.getCheckbox();
 	if(UseUnitFromMenu) {
 		u_new = Dialog.getChoice();
 		//if(eval(custom_string) != "") u_new = eval(custom_string);
 	}
-
 	setVoxelSize(pw_new, ph_new, 1, u_new);
-	
 }
-
 
 // Calculate relativistic electron wavelength
 function calcWav() {
-	//Options dialog
+	// Options dialog
 	Dialog.create("Calculate electron wavelength");
-	
 	Dialog.addMessage("Calculate electron wavelength", 15);
 	Dialog.addNumber("Electron energy (keV): ", 30);
 	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
 	Dialog.show();
 	
-	//Grab values from UI
+	// Grab values from UI
 	E = Dialog.getNumber();
 	
 	e0 = E*1e3*1.602176565e-19; // beam energy, J 
@@ -801,8 +963,8 @@ function calcWav() {
 	print("Wavelength at "+E+" keV in pm: "+wav*1e12);
 }
 
-//Open source code (advanced)
-//Edit/adjust/inspect code
+// Open the source code (advanced)
+// Edit/adjust/inspect code
 function editSourceCode() {
 	SB_path = getDirectory("macros") + "\\toolsets\\" + "EMScaleBarTools.ijm";
 	FEImacro_path = getDirectory("macros") + "FEI_Crop_Scalebar.ijm";
@@ -810,6 +972,194 @@ function editSourceCode() {
 	run("Edit...", "open="+FEImacro_path);
 }
 
+// Switch vertical positions of scale bar and scale-bar label
+function switchScaleBarLabel() {
+	// Save possible open "Results" window
+	storeResultsWindow();
+
+	// Get length, color and unit of current scale bar
+	scalebarlen = call("ij.Prefs.get", "sb.len", 1.0);
+	col = call("ij.Prefs.get", "sb.col", "White");
+	getPixelSize(unit, pixelWidth, pixelHeight);
+
+	// Grab overlay elements and list them in a "Results" table
+	run("List Elements");
+	IJ.renameResults("Overlay Elements of "+getTitle(),"Results");
+	run("Remove Overlay");
+
+	// Store coordinates of overlay objects (scale bar and label with units)
+	sb_index = getValue("results.count") - 2;
+	lbl_index = getValue("results.count") - 1;	
+	
+	sb_Y = getResult("Y", sb_index); //Scale bar
+	sb_X = getResult("X", sb_index); //Scale bar
+	sb_width = getResult("Width", sb_index); //Scale bar
+	sb_height = getResult("Height", sb_index); //Scale bar
+	
+	lbl_Y = getResult("Y", lbl_index); //Label
+	lbl_X = getResult("Y", lbl_index); //Label
+	lbl_height = getResult("Height", lbl_index); //Label
+	lbl_width = getResult("Width", lbl_index); //Label
+
+	// Create new scale bar position at the base line of the label
+	makeRectangle(sb_X, sb_Y+lbl_height-sb_height, sb_width, sb_height);
+	Overlay.addSelection("", 0, col);
+
+	// Create new label at position of the scale bar
+	// NOTE: It is not horizontally centered yet, so another centering step is performed below
+	Overlay.drawString(scalebarlen+" "+unit, sb_X, sb_Y+2*sb_height);
+	
+	close("Results");
+
+	// This part centers the new label horizontally above the new scale bar
+	run("List Elements");
+	IJ.renameResults("Overlay Elements of "+getTitle(),"Results");
+
+	sb_index = getValue("results.count") - 2;
+	lbl_index = getValue("results.count") - 1;	
+	
+	lbl_Y = getResult("Y", lbl_index); //Label
+	lbl_X = getResult("Y", lbl_index); //Label
+	lbl_height = getResult("Height", lbl_index); //Label
+	lbl_width = getResult("Width", lbl_index); //Label
+	
+	setColor(col);
+	
+	run("Remove Overlay");
+	makeRectangle(sb_X, sb_Y+lbl_height-sb_height, sb_width, sb_height);
+	Overlay.addSelection("", 0, col);
+	
+	sb_X_center = sb_X + sb_width/2;
+	lbl_X_center = lbl_X + lbl_width/2;
+	lbl_X_new = lbl_X - (lbl_X_center - sb_X_center);
+	// The value of "2" in the following modifies the distance between label and scale bar
+	// May give non-optimal results for specific fsfac values, i.e.
+	// that the label is far away from the scale bar
+	Overlay.drawString(scalebarlen+" "+unit, lbl_X_new, sb_Y + 2 * sb_height);
+
+	// Clean Up
+	run("Select None");
+	close("Results");
+
+	// Restore old "Results" window if necessary
+	restoreResultsWindow();
+}
+
+// Functions to handle any currently open "Results" windows, so that they are "stored"
+// Some functions of this tool require data from results windows
+function storeResultsWindow() {
+	// Check for already open Results window
+	if(isOpen("Results")) {
+		IJ.renameResults("Results_stored");
+	}
+}
+
+function restoreResultsWindow() {
+	// Check for stored results window Results window
+	if(isOpen("Results_stored")) {
+		IJ.renameResults("Results_stored", "Results");
+	}
+}
+
+// Check for possible overlays on current image, return true/false
+function OverlaysPresent() {
+	run("List Elements");
+	if(isOpen("Overlay Elements of "+getTitle())) {
+		close("Overlay Elements of "+getTitle());
+		return true;
+	}
+	else return false;
+}
+
+// Functions to export and load scale-bar parameters
+function exportEMScaleBarToolsParams() {
+	storeResultsWindow();
+	
+	setResult("Variable", 0, "hfac"); setResult("Value", 0, call("ij.Prefs.get", "sb.hfac", 0.02));
+	setResult("Variable", 1, "sf"); setResult("Value", 1, call("ij.Prefs.get", "sb.sf", 1.0));                       
+	setResult("Variable", 2, "wfac"); setResult("Value", 2, call("ij.Prefs.get", "sb.wfac", 1.0)); 
+    setResult("Variable", 3, "fsfac"); setResult("Value", 3, call("ij.Prefs.get", "sb.fsfac", 3.0));
+    setResult("Variable", 4, "col"); setResult("Value", 4, call("ij.Prefs.get", "sb.col", "Black"));                                   
+	setResult("Variable", 5, "bgcol"); setResult("Value", 5, call("ij.Prefs.get", "sb.bgcol", "None"));
+	setResult("Variable", 6, "loc"); setResult("Value", 6, call("ij.Prefs.get", "sb.loc", "Lower Right"));
+	setResult("Variable", 7, "switched"); setResult("Value", 7, call("ij.Prefs.get", "sb.switched", false)); 
+	
+	setResult("Variable", 8, "len"); setResult("Value", 8, call("ij.Prefs.get", "sb.sb_en", 1.0));
+	setResult("Variable", 9, "height"); setResult("Value", 9, call("ij.Prefs.get", "sb.height", 1.0)); 
+	setResult("Variable", 10, "fontsize"); setResult("Value", 10, call("ij.Prefs.get", "sb.fontsize", 1.0)); 
+	
+	setResult("Variable", 10, "bold"); setResult("Value", 10, call("ij.Prefs.get", "sb.bold", true));
+	setResult("Variable", 11, "overlay"); setResult("Value", 11, call("ij.Prefs.get", "sb.overlay", true));
+	setResult("Variable", 12, "hide"); setResult("Value", 12, call("ij.Prefs.get", "sb.hide", false));
+	setResult("Variable", 13, "serif"); setResult("Value", 13, call("ij.Prefs.get", "sb.serif", false));
+	
+	setResult("Variable", 14, "sb_size_ref"); setResult("Value", 14, call("ij.Prefs.get", "sb.sb_size_ref", "Width"));
+	
+	setResult("Variable", 15, "auto_unit_switching"); setResult("Value", 15, call("ij.Prefs.get", "sb.auto_unit_switching", true));
+	setResult("Variable", 16, "auto_unit_ref"); setResult("Value", 16, call("ij.Prefs.get", "sb.auto_unit_ref", "Width"));
+	setResult("Variable", 17, "U"); setResult("Value", 17, call("ij.Prefs.get", "sb.U", 3));
+	setResult("Variable", 18, "use_angstrom"); setResult("Value", 18, call("ij.Prefs.get", "sb.use_angstrom", true));
+	
+	setResult("Variable", 19, "auto_rescale"); setResult("Value", 19, call("ij.Prefs.get", "sb.auto_rescale", false));
+	setResult("Variable", 20, "rescale_target_px"); setResult("Value", 20, call("ij.Prefs.get", "sb.rescale_target_px", 512));
+	
+	setResult("Variable", 21, "doExtraCmd"); setResult("Value", 21, call("ij.Prefs.get", "sb.doExtraCmd", false));
+	setResult("Variable", 22, "extraCmd"); setResult("Value", 22, call("ij.Prefs.get", "sb.extraCmd", "run('Enhance Contrast', 'saturated=0.35');"));
+
+	// FEI CROP SCALEBAR
+	setResult("Variable", 23, "FEIaddSB"); setResult("Value", 23, call("ij.Prefs.get", "sb.FEIaddSB", true));
+	setResult("Variable", 24, "FEIdoCrop"); setResult("Value", 24, call("ij.Prefs.get", "sb.FEIdoCrop", true));
+	setResult("Variable", 25, "FEIshowMeta"); setResult("Value", 25, call("ij.Prefs.get", "sb.FEIshowMeta", false));
+	setResult("Variable", 26, "FEIdoExtraCmd"); setResult("Value", 26, call("ij.Prefs.get", "sb.FEIdoExtraCmd", false));
+	setResult("Variable", 27, "FEIextraCmd"); setResult("Value", 27, call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"));
+
+	IJ.renameResults("EMScaleBarToolsParameters");
+	restoreResultsWindow();
+}
+
+function importEMScaleBarToolsParams() {
+	storeResultsWindow();
+
+	// LOAD PARAMETERS FROM FILE TO RESULTS TABLE
+	// From the example here: https://imagej.nih.gov/ij/macros/Import_Results_Table.txt
+	lineseparator = "\n";
+	cellseparator = ",\t";
+	
+	// copies the whole RT to an array of lines
+	lines=split(File.openAsString(File.openDialog("")), lineseparator);
+	
+	// recreates the columns headers
+	labels=split(lines[0], cellseparator);
+	if (labels[0]==" ")
+		k=1; // it is an ImageJ Results table, skip first column
+	else
+		k=0; // it is not a Results table, load all columns
+	for (j=k; j<labels.length; j++)
+		setResult(labels[j],0,0);
+	
+	// dispatches the data into the new RT
+	run("Clear Results");
+	for (i=1; i<lines.length; i++) {
+		items=split(lines[i], cellseparator);
+			for (j=k; j<items.length; j++)
+	   		setResult(labels[j],i-1,items[j]);
+	}
+	updateResults();
+
+	// Update internal parameters based on loaded values
+	for (i = 0; i < nResults; i++) {
+		call("ij.Prefs.set", "sb."+Table.getString("Variable", i), Table.getString("Value", i))
+	}
+	
+	IJ.renameResults("EMScaleBarToolsParameters_loaded");
+	restoreResultsWindow();
+	
+	// OK dialog, asking to reload toolset to update variables
+	Dialog.create("Please reload EMScaleBarTools");
+	Dialog.addMessage("Please reload EMScaleBarTools to update the imported values. Select 'EMScaleBarTools' again from the 'More Tools >>' menu.", 12);
+	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+	Dialog.show();
+}
 
 // Help Menu
 function HelpMenu() {
@@ -832,6 +1182,7 @@ function HelpMenu() {
 	about= about+"\n       \"Set pixel size and unit\": Scale image based on pixel size and unit.";
 	about= about+"\n       \"Set image width and unit\": Scale image based on image width and unit.";
 	about= about+"\n       \"Calculate electron wavelength\": Calculate relativistic de Broglie-wavelength from an electron energy.";
+	about= about+"\n       \"Export/Import scale-bar parameters: Export creates a Fiji table that can be saved as csv and loaded with Import.";
 	about= about+"\n       \"Edit source code\": Opens the source code in the editor.";
 	about=about + "\n---------------------------------------------------------------------------------";
 	about= about+"\nDefault hotkeys:";
@@ -839,6 +1190,14 @@ function HelpMenu() {
 	about= about+"\n- \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor.";
 	about= about+"\n- \"Save As PNG... [ p ]\": Save image as PNG.";
 	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard.";
+	about= about+"\n- \"Switch positions [ t ]\": Switch scale bar and label positions.";
+	about= about+"\nNumpad:";
+	about= about+"\n- 5: Add/remove scale bar. Use with ALT key pressed to invert black/white color.";
+	about= about+"\n- 1, 3, 7, 9: Move scale bar to (1) Lower left, (3) lower right, (7) upper left, (9) upper right.";
+	about= about+"\n- 2, 8: De-/Increase scale-bar size. Use with ALT key pressed to enter a scaling factor.";
+	about= about+"\n- 4, 6: De-/Increase scale-bar length. Use with ALT key pressed to enter a specific length.";
+	about= about+"\n- 0: Reset scale bar to scaling factor 1.0 and lower-right position.";
+	about= about+"\n- *: Open \"QuickScaleBar\" tool options menu.";
 	about=about + "\n---------------------------------------------------------------------------------";
 	about=about +"\nVersion: "+version+"";
 	about=about +"\nAuthor: Lukas Gr"+fromCharCode(0x00FC)+"newald, "+date+", https://github.com/lukmuk/em-scalebartools";
