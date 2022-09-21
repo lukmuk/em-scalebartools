@@ -83,4 +83,10 @@ For a description of the other tools, take a look at the [wiki](https://github.c
 
 * Fiji/ImageJ: [Scale Bar Tools for Microscopes](http://image.bio.methods.free.fr/ImageJ/?Scale-Bar-Tools-for-Microscopes.html&lang=en) by Gilles Carpentier
 
+## Citing
+
+If you want, you can cite this project via Zenodo:  
+  
+[![DOI](https://zenodo.org/badge/394599605.svg)](https://zenodo.org/badge/latestdoi/394599605)
+
 
