@@ -11,7 +11,7 @@ Installation:
 4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 12/2021, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, 09/2022, https://github.com/lukmuk/em-scalebartools
 
 */
 
@@ -45,56 +45,13 @@ extraSBvals = call("ij.Prefs.get", "sb.extraSBvals", "75,150"); // default "75,1
 //FEI CROP SCALEBAR
 FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
 FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
-FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
+//FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
 FEIdoExtraCmd = call("ij.Prefs.get", "sb.FEIdoExtraCmd", false); //default false
 FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
 
 
 if(FEIdoCrop) {
-	if(FEIuseList) {
-		//Get microscope info
-		// Taken from https://github.com/IMBalENce/EM-tool/blob/master/SEM_FEI_metadata_Scale.ijm
-		run("Bio-Formats Macro Extensions");
-		path = getDirectory("image");
-		if (path=="") exit ("path not available");
-		name = getInfo("image.filename");
-		if (name=="") exit ("name not available");
-		id = path + name;
-		Ext.setId(id);
-		Ext.getSeriesCount(seriesCount);
-		
-		// Determine which microscope is used, can be expanded to accommondate more types
-		Ext.getMetadataValue("[System] SystemType", SystemType);
-	
-		// Crop based on microscope type
-		w=getWidth();
-		h=getHeight();
-		
-		//HELIOS
-		//Crop FEI infobar, which for HELIOS is the rest between the image 
-		//height in pixels and the next smaller power of 2
-		if(SystemType == "Helios G4 FX") {
-			c = pow(2, floor(log(h)/log(2)));
-			run("Specify...", "width=w height="+c+" x=0 y=0");
-			run("Crop");
-		}
-		
-		//STRATA and ESEM/Quanta
-		//For Strata, the crop values are listed in the "heights" array
-		if(SystemType == "Strata DB" || SystemType == "Quanta FEG") {
-			heights = newArray(443 , 884, 884*2, 884*4);
-			jndex = 0;
-			for (j=0; j<heights.length; j++)
-				if(h > heights[j])
-					jndex = j;
-					continue;
-				break;
-			run("Specify...", "width=w height="+heights[jndex]+" x=0 y=0");
-			run("Crop");
-		}
-	}
-	else {
 		run("Bio-Formats Macro Extensions");
 		path = getDirectory("image");
 		if (path=="") exit ("path not available");
@@ -115,22 +72,22 @@ if(FEIdoCrop) {
 		// Crop
 		run("Specify...", "width=w height="+round(VerFieldsize/VerPixelsize)+" x=0 y=0");
 		run("Crop");
-	}
-	
 }
 
 //Scale with "EM tool" script by IMBalENce
 //https://imagej.net/plugins/imbalence
 run("SEM FEI metadata Scale");
 
-// Add the scale bar
-if(FEIaddSB) addScalebar();
-
 //Optionally close log window with metadata
 if(FEIshowMeta == false) {
 	selectWindow("Log");
 	run("Close");
 }
+
+// Add the scale bar
+if(FEIaddSB) addScalebar();
+
+
 
 
 // --------------------------------------------- //
@@ -159,7 +116,7 @@ function addScalebar() {
 	}
 
 	//Switch units
-	if(auto_unit_switching) unit_switcher(auto_unit_ref);
+	if(auto_unit_switching) UnitSwitcher(auto_unit_ref);
 
 	//Run extra commands
 	if (FEIdoExtraCmd) eval(FEIextraCmd);
@@ -231,8 +188,13 @@ function addScalebar() {
 	}
 }
 
-function unit_switcher(auto_unit_ref) {
-	//Get scaled image size
+function UnitSwitcher(auto_unit_ref) {
+	/* 
+	Function to switch the length units automatically. The value of auto_unit_ref is used to decide when to switch.
+	E.g. auto_unit_ref = 3 will switch images with a width of >3000 nm to um, or images with a width of <3 um to nm.
+	*/
+	
+	// Get scaled image size
 	getPixelSize(unit, pw, ph);
 	if(auto_unit_ref == "Width") {val = getWidth()*pw;}
 	if(auto_unit_ref == "Height") {val = getHeight()*pw;}
@@ -318,9 +280,7 @@ function unit_switcher(auto_unit_ref) {
 	}
 	
 
-	//Other direction starts from here
-
-	
+	// Other direction starts from here
 	if(use_angstrom == false) {
 	//pm -> nm
 	if(val >= U*1e3 && (unit == "pm")){
