@@ -1,6 +1,10 @@
 # em-scalebartools
 
 Fiji macro toolset to quickly add a scale bar with reasonable size to an image. Developed for electron microscopy.
+ 
+<img title="Basic usage" src="images/EMscalebartools_00.gif" alt="Example" data-align="left" width="450">  
+Image source: Cropped image of [Cobaea scandens](https://commons.wikimedia.org/wiki/File:Cobaea_scandens1-4.jpg) pollen by Marie Majaura from [Wikipedia](https://en.wikipedia.org/wiki/Scanning_electron_microscope).
+
 
 ## Examples
 
