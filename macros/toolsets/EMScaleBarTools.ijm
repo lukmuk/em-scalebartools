@@ -404,7 +404,11 @@ macro "Increase Scale Bar Size Increment [n6]" {
 	fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0);
 
 	scalebarlen_new = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
-
+	
+	// Calculate image width in length unit
+	getPixelSize(unit,w_px,h_px);
+	imagewidth = w_px*getWidth();
+	
 	//Set scale-bar length from user input
 	if(isKeyDown("alt")) {
 		Dialog.create("Set scale bar length");
@@ -417,10 +421,13 @@ macro "Increase Scale Bar Size Increment [n6]" {
 		
 		//Grab values from UI
 		scalebarlen_new = Dialog.getNumber();
+		if(scalebarlen_new > imagewidth) print("Desired scale-bar length exceeds image width (",toString(imagewidth,2), ").");
+		if(scalebarlen_new < 1)  print("Please choose a value >= 1 or switch length unit prefix (e.g. µm to nm).");
 	}
 
 	// Update len
-	call("ij.Prefs.set", "sb.len", scalebarlen_new)
+	// if clause to prevent scale bar length being (i) larger than actual image width and (ii) smaller than 1
+	if(scalebarlen_new <= imagewidth && scalebarlen_new >= 1)  call("ij.Prefs.set", "sb.len", scalebarlen_new);
 	updateScalebar();
 }
 
@@ -441,6 +448,11 @@ macro "Decrease Scale Bar Size Increment [n4]" {
 			scalebarlen_new = tmp;
 		}
 	}
+	
+		
+	// Calculate image width in length unit
+	getPixelSize(unit,w_px,h_px);
+	imagewidth = w_px*getWidth();
 
 	// Set scale-bar length from user input
 	if(isKeyDown("alt")) {
@@ -451,10 +463,13 @@ macro "Decrease Scale Bar Size Increment [n4]" {
 		
 		// Grab values from UI
 		scalebarlen_new = Dialog.getNumber();
+		if(scalebarlen_new > imagewidth) print("Desired scale-bar length exceeds image width (",toString(imagewidth,2), ").");
+		if(scalebarlen_new < 1)  print("Please choose a value >= 1 or switch length unit prefix (e.g. µm to nm).");
 	}
 	
 	// Update len
-	call("ij.Prefs.set", "sb.len", scalebarlen_new)
+	// if clause to prevent scale bar length being (i) larger than actual image width and (ii) smaller than 1
+	if(scalebarlen_new <= imagewidth && scalebarlen_new >= 1)  call("ij.Prefs.set", "sb.len", scalebarlen_new);
 	updateScalebar();
 
 }
