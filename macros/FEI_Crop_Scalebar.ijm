@@ -90,19 +90,35 @@ if(FEIaddSB) addScalebar();
 
 
 
+
 // --------------------------------------------- //
 // ----------------- FUNCTIONS ----------------- //
 // --------------------------------------------- //
 
 function addScalebar() {
-	//Auto rescale images below rescale_target_px
+	/* 
+	Function to calculate size and position of a scale bar.
+	Adds it to the currently selected image.
+	*/
+	
+	
+	// Check if any image is present. If not, exit function by returning 0
+	if(nImages==0) return 0
+
+	// Get current parameter values which may be changed by other functions
+	sf = parseFloat(call("ij.Prefs.get", "sb.sf", 1));
+	loc = call("ij.Prefs.get", "sb.loc", "Lower Right");
+	switched = call("ij.Prefs.get", "sb.switched", false);
+	if(switched) run("Remove Overlay");
+	
+	// Auto rescale images below rescale_target_px
 	if(auto_rescale && (getWidth() < rescale_target_px || getHeight() < rescale_target_px)) {
 		w = getWidth();
 		h = getHeight();
 		facw = Math.ceil(rescale_target_px/w);
 		fach = Math.ceil(rescale_target_px/h);
 
-		//Handle stacks
+		// Handle stacks, i.e. add scale bar to all images in a stack
 		d = 1;
 		if(nSlices > 1) d = nSlices;
 		
@@ -115,13 +131,13 @@ function addScalebar() {
 		
 	}
 
-	//Switch units
+	// Switch length units
 	if(auto_unit_switching) UnitSwitcher(auto_unit_ref);
 
 	//Run extra commands
 	if (FEIdoExtraCmd) eval(FEIextraCmd);
 
-	//Calculate height of scalebar
+	// Calculate height in pixels of scale bar
 	if(sb_size_ref == "Larger") {
 		if(getHeight() >= getWidth()) {height = round(getHeight()*hfac);}
 		else {height = round(getWidth()*hfac);}
@@ -132,44 +148,34 @@ function addScalebar() {
 	}
 	if(sb_size_ref == "Width") height = round(getWidth()*hfac);
 	if(sb_size_ref == "Height") height = round(getHeight()*hfac);
-	
+
 	// Multiply height with scaling factor
 	height = height * sf;
-	
-	//Calculate fontsize
-	fontsize = height * fsfac;
-	
-	//Set width of scalebar
-	//Searches closest value from vals array to find sb width
-	if(auto_unit_switching) {
-		vals = newArray(1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
-	}
-	else {
-		vals = newArray(0.01, 0.02, 0.025, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000);
-		if (doExtraSBvals) {
-			custom_vals = split(extraSBvals, ",");
-			vals = Array.concat(vals, custom_vals);
-		}
-	}
-	
-	//Get initial size of scalebar as percentage of image width
-	getPixelSize(unit, pw, ph);
-	imw = getWidth()*pw;
-	sb_w = round(wfac*imw);
-	
-	//Find next smaller value to sb_w in vals
-	index = 0;
-	for (i=0; i<vals.length; i++)
-		if(sb_w > vals[i])
-			index = i;
-			continue;
-		break;
 
-	//Other cosmetics
+	// Calculate fontsize
+	fontsize = height * fsfac;
+
+	// Calculate scale-bar size using a 1-2-5 series
+	// Code by Ales Kladnik (aleskl)  
+	
+	getPixelSize(unit,w_px,h_px);
+	imw = w_px*getWidth(); // image width in measurement units
+	
+	scalebarlen = 0.01*imw; // initial scale bar length in measurement units
+	maxscalebarlen = imw * wfac; // maximum scale bar width in measurement units
+	
+	// recursively calculate a 1-2-5 series until the length reaches scalebarsize, default to 1/10th of image width
+	// 1-2-5 series is calculated by repeated multiplication with 2.3, rounded to one significant digit
+	while (scalebarlen < maxscalebarlen) {
+		scalebarlen = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
+	}
+
+	// Update len variable with found scale-bar length, required for other macros
+	call("ij.Prefs.set", "sb.len", scalebarlen);
+	call("ij.Prefs.set", "sb.height", height); 
+	call("ij.Prefs.set", "sb.fontsize", fontsize); 
+
+	// Other cosmetics
 	b=""; //bold
 	o=""; //overlay
 	h=""; //hide text
@@ -179,14 +185,21 @@ function addScalebar() {
 	if(hide) h="hide";
 	if(serif) s="serif";
 	
-	//Run scale bar command
-	run("Scale Bar...", "width="+vals[index]+" height="+height+" font="+fontsize+" color="+col+" background="+bgcol+" location=["+loc+"] "+b+" "+h+" "+s+" "+o);
+	// Run ImageJ scale-bar command
+	run("Scale Bar...", "width="+scalebarlen+" height="+height+" font="+fontsize+" color="+col+" background="+bgcol+" location=["+loc+"] "+b+" "+h+" "+s+" "+o);
+	
+	// Flip vertical positions of scale bar and the label
+	if(switched) switchScaleBarLabel();
+	
+	// Hide label
 	if(hide) {
 		if(auto_rescale) name = getTitle();
 		run("Duplicate...", "title="+substring(getTitle(), 0, lastIndexOf(getTitle(), '.'))+"_scale-"+vals[index]+unit+".tif");
 		if(auto_rescale) close(name);
 	}
 }
+
+
 
 function UnitSwitcher(auto_unit_ref) {
 	/* 
