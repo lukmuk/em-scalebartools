@@ -13,8 +13,8 @@ Installation:
 
 */
 
-var date = "09/2022"
-var version = 0.3
+var date = "04/2023"
+var version = 0.3.2
 
 //Initialize scale-bar parameters
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
