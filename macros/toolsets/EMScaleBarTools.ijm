@@ -13,8 +13,8 @@ Installation:
 
 */
 
-var date = "04/2023"
-var version = 0.3.2
+var date = "08/2023"
+var version = 0.3.3
 
 //Initialize scale-bar parameters
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
@@ -595,7 +595,18 @@ function addScalebar() {
 	while (scalebarlen < maxscalebarlen) {
 		scalebarlen = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
 	}
-
+	
+	// Check for possible rounding errors
+	if(scalebarlen < 1)  {
+		print("Scale bar length in physical units < 1 unit. Possible rounding error.");
+		print("Please DOUBLE-CHECK SCALE BAR LENGTH!");
+		print("Before: ", scalebarlen);
+		while(scalebarlen < 1) scalebarlen *= 2;
+		print("After: ", scalebarlen);
+	}
+	
+	// print(scalebarlen);
+	
 	// Update len variable with found scale-bar length, required for other macros
 	call("ij.Prefs.set", "sb.len", scalebarlen);
 	call("ij.Prefs.set", "sb.height", height); 
@@ -623,6 +634,7 @@ function addScalebar() {
 		run("Duplicate...", "title="+substring(getTitle(), 0, lastIndexOf(getTitle(), '.'))+"_scale-"+vals[index]+unit+".tif");
 		if(auto_rescale) close(name);
 	}
+	
 }
 
 function updateScalebar() {

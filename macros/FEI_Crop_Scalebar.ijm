@@ -11,7 +11,7 @@ Installation:
 4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 09/2022, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, 08/2023, https://github.com/lukmuk/em-scalebartools
 
 */
 
@@ -168,6 +168,16 @@ function addScalebar() {
 	// 1-2-5 series is calculated by repeated multiplication with 2.3, rounded to one significant digit
 	while (scalebarlen < maxscalebarlen) {
 		scalebarlen = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
+	}
+	
+	// Check for possible rounding errors
+	if(scalebarlen < 1)  {
+		print("Scale bar length in physical units < 1 unit. Possible rounding error.");
+		print("Please DOUBLE-CHECK SCALE BAR LENGTH!");
+		print("Doubling scale bar length until it is at least 1 unit.");
+		print("Before: ", scalebarlen);
+		while(scalebarlen < 1) scalebarlen *= 2;
+		print("After: ", scalebarlen);
 	}
 
 	// Update len variable with found scale-bar length, required for other macros
