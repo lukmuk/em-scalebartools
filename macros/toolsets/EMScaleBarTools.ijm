@@ -600,8 +600,9 @@ function addScalebar() {
 	if(scalebarlen < 1)  {
 		print("Scale bar length in physical units < 1 unit. Possible rounding error.");
 		print("Please DOUBLE-CHECK SCALE BAR LENGTH!");
+		print("Setting scale bar to 1 unit.");
 		print("Before: ", scalebarlen);
-		while(scalebarlen < 1) scalebarlen *= 2;
+		if(scalebarlen < 1) scalebarlen = 1;
 		print("After: ", scalebarlen);
 	}
 	
