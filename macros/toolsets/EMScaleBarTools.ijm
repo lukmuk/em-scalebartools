@@ -13,8 +13,8 @@ Installation:
 
 */
 
-var date = "08/2023"
-var version = 0.3.3
+var date = "04/2024"
+var version = 0.4.0
 
 //Initialize scale-bar parameters
 var hfac = call("ij.Prefs.get", "sb.hfac", 0.02); // default 0.02
@@ -22,7 +22,7 @@ var sf = call("ij.Prefs.get", "sb.sf", 1); // default 1
 var wfac = call("ij.Prefs.get", "sb.wfac", 0.2);  // default 0.2
 var fsfac = call("ij.Prefs.get", "sb.fsfac", 3);  // default 2
 var col = call("ij.Prefs.get", "sb.col", "Black");  // default "Black"
-var bgcol = call("ij.Prefs.get", "sb.bgcol", "None");  // default "White"
+var bgcol = call("ij.Prefs.get", "sb.bgcol", "None");  // default "None"
 var loc = call("ij.Prefs.get", "sb.loc", "Lower Right");  // default "Lower Right"
 var switched = call("ij.Prefs.get", "sb.switched", false); //default false
 
@@ -35,7 +35,7 @@ var overlay = call("ij.Prefs.get", "sb.overlay", true); //default true
 var hide = call("ij.Prefs.get", "sb.hide", false); //default false
 var serif = call("ij.Prefs.get", "sb.serif", false); //default false
 
-var sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Larger"); //default "Larger"
+var sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Width"); //default "Width"
 
 var auto_unit_switching = call("ij.Prefs.get", "sb.auto_unit_switching", true); //default true
 var auto_unit_ref = call("ij.Prefs.get", "sb.auto_unit_ref", "Width"); //default false
@@ -47,6 +47,10 @@ var rescale_target_px = call("ij.Prefs.get", "sb.rescale_target_px", 512); //def
 
 var doExtraCmd = call("ij.Prefs.get", "sb.doExtraCmd", false); //default false
 var extraCmd = call("ij.Prefs.get", "sb.extraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
+
+var sample_tilt = call("ij.Prefs.get", "sb.sample_tilt", 52); //default 52, FEI FIB-SEM for normal FIB incidence
+
+var warning_plugin_req = call("ij.Prefs.get", "sb.warning_plugin_req", true); // default true
 
 //FEI CROP SCALEBAR
 var FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
@@ -267,15 +271,17 @@ macro "Remove Overlays Action Tool - C037R00ddB58Cd00L0088L0880" {
 // --------------------------------------------- //
 // --------- Misc. Functions Menu Tool --------- //
 // --------------------------------------------- //
-var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Set image width and unit", "Calculate electron wavelength", "-","Export scale-bar parameters", "Import scale-bar parameters", "Edit source code (advanced)", "Help"));
+var mCmds = newMenu("Misc. Functions Menu Tool", newArray("Set pixel size and unit", "Set image width and unit", "-", "Correct for tilted perspective", "Calculate electron wavelength", "-","Export scale-bar parameters", "Import scale-bar parameters", "Edit source code (advanced)", "Preferences", "Help"));
 macro "Misc. Functions Menu Tool - CfffCeeeCdddCcccCbbbCaaaC999C888C777C666C555C444C333C222C111C000D23D24D27D28D2bD2cD33D34D37D38D3bD3cD43D44D47D48D4bD4cD53D54D57D58D5bD5cD63D64D67D68D6bD6cD73D74D77D78D7bD7cD83D84D87D88D8bD8cD93D94D97D98D9bD9cDa3Da4Da7Da8DabDacDb3Db4Db7Db8DbbDbcDc3Dc4Dc7Dc8DcbDccDd3Dd4Dd7Dd8DdbDdc" {
 	cmd = getArgument();
 	if (cmd!="-" && cmd == "Set pixel size and unit") setPxAndUnit();
 	if (cmd!="-" && cmd == "Set image width and unit") setWidthAndUnit();
+	if (cmd!="-" && cmd == "Correct for tilted perspective") correctSampleTilt();
 	if (cmd!="-" && cmd == "Calculate electron wavelength") calcWav();
 	if (cmd!="-" && cmd == "Export scale-bar parameters") exportEMScaleBarToolsParams();
 	if (cmd!="-" && cmd == "Import scale-bar parameters") importEMScaleBarToolsParams();
 	if (cmd!="-" && cmd == "Edit source code (advanced)") editSourceCode();
+	if (cmd!="-" && cmd == "Preferences") editPreferences();
 	if (cmd!="-" && cmd == "Help") HelpMenu();
 }
 	
@@ -299,9 +305,54 @@ macro "Save As PNG... [p]" {
 	saveAs("PNG");
 }
 
+// SVG saving
+// Requires BioVoxxel Figure Tools
+macro "Save as SVG... [s]" {
+	// Warning for required plugin
+	warning_plugin_req = call("ij.Prefs.get", "sb.warning_plugin_req", true);
+	if(warning_plugin_req) {
+		Dialog.create("Warning");
+		Dialog.addMessage("Requires the plugin: BioVoxxel Figure Tools\nClick:\n   - 'Ok' to continue\n   - 'Cancel' to stop the action\n   - 'Help' to open the plugin page.\nThis warning can be disabled in the preferences.");
+		Dialog.addHelp("https://github.com/biovoxxel/BioVoxxel-Figure-Tools");
+		Dialog.show();
+	}
+	
+	svg_dir = getDirectory("Choose a directory for saving the svg");
+	img_title = getTitle();
+	save_title = substring(img_title, 0, lastIndexOf(img_title, "."));
+	run("Export SVG", "filename="+save_title+" folder="+svg_dir+" keepcomposite=false exportchannelsseparately=None exportalsononvisiblechannels=false interpolationrange=0.0 locksensitiverois=true");
+}
+
 // "Copy to system shortcut" -> quickly copy to other programs
 macro "Copy to system... [c]" {
-	run("Copy to System");
+	// Auto rescale images below rescale_target_px
+	if(auto_rescale && (getWidth() < rescale_target_px || getHeight() < rescale_target_px)) {
+		id = getImageID();
+		w = getWidth();
+		h = getHeight();
+		facw = Math.ceil(rescale_target_px/w);
+		fach = Math.ceil(rescale_target_px/h);
+
+		// Handle stacks, copy only active slice to clipboard
+		d = 1;
+		if(nSlices > 1) d = nSlices;
+		
+		if(facw >= fach) {
+			run("Scale...", "x="+facw+" y="+facw+" width="+(facw*w)+" height="+(facw*h)+" depth="+d+" interpolation=None average create");
+		}
+		else {
+			run("Scale...", "x="+fach+" y="+fach+" width="+(fach*w)+" height="+(fach*h)+" depth="+d+" interpolation=None average create");
+		}
+		
+		// copy the scaled image to the clipboard, then close it
+		run("Copy to System");
+		close();
+		
+		selectImage(id);
+	}
+	else {
+		run("Copy to System");
+	}
 }
 
 // Add scale bar
@@ -343,7 +394,7 @@ macro "Add Scale Bar [n5]"{
 
 	//Toggle scale-bar on/off
 	else {
-		if(OverlaysPresent()) run("Remove Overlay");
+		if(Overlay.size != 0) run("Remove Overlay");
 		else updateScalebar();
 	}
 }
@@ -354,12 +405,9 @@ macro "Shrink Scale Bar [n2]"{
 	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
 	if(isKeyDown("alt")) {
 		//Set scaling factor from user input
-		Dialog.create("Set scale bar length");
-
-		//Dialog.addMessage("Scalebar appearance", 15);
+		Dialog.create("Set scaling factor");
 		Dialog.addNumber("Set scaling factor: ", sf_old, 2, 10, "");
-
-		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools/wiki/Hotkeys#2-8---de-increase-scale-bar-size-via-scaling-factor-with-alt-key-pressed-specify-the-scaling-factor");
 		Dialog.show();
 
 		//Grab values from UI
@@ -376,23 +424,26 @@ macro "Shrink Scale Bar [n2]"{
 // ALT: Specify scale-bar size from user input by modifying size factor sf
 macro "Enlarge Scale Bar Numpad [n8]" {
 	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
+	height_old = parseFloat(call("ij.Prefs.get", "sb.height", 1.0));
+	fontsize_old = parseFloat(call("ij.Prefs.get", "sb.fontsize", 1.0));
+	
 	if(isKeyDown("alt")) {
 		//Set scaling factor from user input
-		Dialog.create("Set scale bar length");
-			
-		//Dialog.addMessage("Scalebar appearance", 15);
+		Dialog.create("Set scaling factor");
 		Dialog.addNumber("Set scaling factor: ", sf_old, 2, 10, "");
-	
-		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools/wiki/Hotkeys#2-8---de-increase-scale-bar-size-via-scaling-factor-with-alt-key-pressed-specify-the-scaling-factor");
 		Dialog.show();
 		
 		//Grab values from UI
 		sf_new = Dialog.getNumber();
+		height_new = height_old * sf_new;
+		fontsize_new = fontsize_old * sf_new;
 	}
 	else {
 		sf_new = sf_old + 0.1;
 	}
-	call("ij.Prefs.set", "sb.sf", sf_new);
+	
+	call("ij.Prefs.set", "sb.sf", sf_new);	
 	updateScalebar();
 }
 
@@ -400,8 +451,6 @@ macro "Enlarge Scale Bar Numpad [n8]" {
 // ALT: Specify scale-bar length from user input in length units
 macro "Increase Scale Bar Size Increment [n6]" {
 	scalebarlen = parseFloat(call("ij.Prefs.get", "sb.len", 1.0));
-	height = call("ij.Prefs.get", "sb.height", 1.0);
-	fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0);
 
 	scalebarlen_new = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
 	
@@ -412,11 +461,8 @@ macro "Increase Scale Bar Size Increment [n6]" {
 	//Set scale-bar length from user input
 	if(isKeyDown("alt")) {
 		Dialog.create("Set scale bar length");
-			
-		//Dialog.addMessage("Scalebar appearance", 15);
 		Dialog.addNumber("Set scale-bar length: ", scalebarlen, 2, 10, "");
-	
-		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools/wiki/Hotkeys#4-6---de-increase-scale-bar-length-in-1-2-5-series-with-alt-key-pressed-specify-a-custom-scale-bar-length-in-measurement-units");
 		Dialog.show();
 		
 		//Grab values from UI
@@ -458,7 +504,7 @@ macro "Decrease Scale Bar Size Increment [n4]" {
 	if(isKeyDown("alt")) {
 		Dialog.create("Set scale bar length");
 		Dialog.addNumber("Set scale-bar length: ", scalebarlen, 2, 10, "");
-		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+		Dialog.addHelp("https://github.com/lukmuk/em-scalebartools/wiki/Hotkeys#4-6---de-increase-scale-bar-length-in-1-2-5-series-with-alt-key-pressed-specify-a-custom-scale-bar-length-in-measurement-units");
 		Dialog.show();
 		
 		// Grab values from UI
@@ -498,9 +544,17 @@ macro "Scale Bar Upper Left [n7]" {
 
 // Reset scale bar location to "Lower Right" and scaling factor back to 1.0
 macro "Reset Scale Bar [n0]" {
-	call("ij.Prefs.set", "sb.loc", "Lower Right");
-	call("ij.Prefs.set", "sb.sf", 1.0);
-	updateScalebar();
+	// Add a scalebar if no overlay is present
+	if(Overlay.size == 0) {
+		call("ij.Prefs.set", "sb.loc", "Lower Right");
+		call("ij.Prefs.set", "sb.sf", 1.0);
+		addScalebar();
+	}
+	else {
+		call("ij.Prefs.set", "sb.loc", "Lower Right");
+		call("ij.Prefs.set", "sb.sf", 1.0);
+		updateScalebar();
+	}
 }
 
 // Switch vertical positions of the scale bar and the label
@@ -526,7 +580,6 @@ function addScalebar() {
 	Function to calculate size and position of a scale bar.
 	Adds it to the currently selected image.
 	*/
-	
 	
 	// Check if any image is present. If not, exit function by returning 0
 	if(nImages==0) return 0
@@ -596,17 +649,15 @@ function addScalebar() {
 		scalebarlen = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
 	}
 	
-	// Check for possible rounding errors
+	// Check for possible rounding errors, set scalebarlen to 1 if it is < 1
 	if(scalebarlen < 1)  {
 		print("Scale bar length in physical units < 1 unit. Possible rounding error.");
-		print("Please DOUBLE-CHECK SCALE BAR LENGTH!");
+		print("Please double-check the scale-bar length!");
 		print("Setting scale bar to 1 unit.");
 		print("Before: ", scalebarlen);
 		if(scalebarlen < 1) scalebarlen = 1;
 		print("After: ", scalebarlen);
 	}
-	
-	// print(scalebarlen);
 	
 	// Update len variable with found scale-bar length, required for other macros
 	call("ij.Prefs.set", "sb.len", scalebarlen);
@@ -648,10 +699,22 @@ function updateScalebar() {
 	fsfac = parseFloat(call("ij.Prefs.get", "sb.fsfac", 3));
 	loc = call("ij.Prefs.get", "sb.loc", "Lower Right");
 	scalebarlen = call("ij.Prefs.get", "sb.len", 1.0);
-	height = parseFloat(call("ij.Prefs.get", "sb.height", 1.0));
+
+	// Calculate height in pixels of scale bar
+	if(sb_size_ref == "Larger") {
+		if(getHeight() >= getWidth()) {height = round(getHeight()*hfac);}
+		else {height = round(getWidth()*hfac);}
+	}
+	if(sb_size_ref == "Smaller") {
+		if(getHeight() >= getWidth()) {height = round(getWidth()*hfac);}
+		else {height = round(getHeight()*hfac);}
+	}
+	if(sb_size_ref == "Width") height = round(getWidth()*hfac);
+	if(sb_size_ref == "Height") height = round(getHeight()*hfac);
 	height = height * sf;
-	fontsize = parseFloat(call("ij.Prefs.get", "sb.fontsize", 1.0));
-	fontsize = fontsize * sf;
+	
+	// Calculate fontsize
+	fontsize = height * fsfac;
 
 	col = call("ij.Prefs.get", "sb.col", "Black");
 	bgcol = call("ij.Prefs.get", "sb.bgcol", "White");  
@@ -857,7 +920,6 @@ function UnitSwitcher(auto_unit_ref) {
 function selectNone( ) { 
   Overlay.removeRois( 'ToolSelectedOverlayElement' ); 
   Overlay.show; 
-  //call( 'ij.Prefs.set', 'overlaytoolset.selected', '' ); 
 } 
 
 function selectElement( id, add ) { 
@@ -948,7 +1010,6 @@ function setWidthAndUnit() {
 	// Angstrom, Angstrom-1, nm-1
 	special = newArray(fromCharCode(0x0212b), fromCharCode(0x0212b, 0x0207b, 0x000b9), 'nm'+fromCharCode(0x0207b, 0x000b9));
 	
-	// Dialog.addMessage("Scalebar appearance", 15);
 	Dialog.addNumber("Image width: ", w, 8, 10, "");
 	Dialog.addString("Unit: ", u);
 	Dialog.addCheckbox("Use special unit: ", false);
@@ -966,7 +1027,6 @@ function setWidthAndUnit() {
 	UseUnitFromMenu = Dialog.getCheckbox();
 	if(UseUnitFromMenu) {
 		u_new = Dialog.getChoice();
-		//if(eval(custom_string) != "") u_new = eval(custom_string);
 	}
 	setVoxelSize(pw_new, ph_new, 1, u_new);
 }
@@ -991,13 +1051,130 @@ function calcWav() {
 	print("Wavelength at "+E+" keV in pm: "+wav*1e12);
 }
 
+// Set pixel size of tilted stage or scale image in y-direction (vertical)
+// Use to measure features in tilted image, e.g., from SEM-EBSD or FIB-SEM cross-sections
+function correctSampleTilt() {
+	// Grab pixel size and unit from current image
+	getPixelSize(u, pw, ph);
+
+	// Options dialog
+	Dialog.create("Tilted View - Pixel Size / Image Re-Scaler");
+	Dialog.addMessage("Please enter a sample tilt and select the desired output options.");
+	Dialog.addMessage("Note: The vertical / y-direction is assumed to be the tilted direction.");
+	Dialog.addNumber("       Sample tilt: ", sample_tilt, 1, 5, "");
+	Dialog.addMessage("Rescale pixel size:");
+	Dialog.addCheckbox("Cross-section ", true);
+	Dialog.addCheckbox("Surface ", false);
+	Dialog.addMessage("Rescale image size (requires TransformJ):");
+	Dialog.addCheckbox("Cross-section ", true);
+	Dialog.addCheckbox("Surface ", false);
+	
+	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+	Dialog.show();
+	
+	// Grab values from UI
+	sample_tilt = Dialog.getNumber();
+	do_cross_section_tilt_correction = Dialog.getCheckbox();
+	do_surface_tilt_correction = Dialog.getCheckbox();
+	
+	do_cross_section_tilt_correction_image = Dialog.getCheckbox();
+	do_surface_tilt_correction_image = Dialog.getCheckbox();
+	
+
+	// Evalute
+	id = getImageID();
+	
+	if(do_cross_section_tilt_correction) {
+		selectImage(id);
+		title_tmp = substring(getTitle(), 0, indexOf(getTitle(), '.'));
+		run("Duplicate...", "title="+title_tmp+"-TC_"+sample_tilt+"deg_XSec.tif");
+		
+		ph_new = ph * 1/sin(sample_tilt*PI/180);
+		setVoxelSize(pw, ph_new, 1, u);
+	}
+		
+	if(do_surface_tilt_correction) {
+		selectImage(id);
+		title_tmp = substring(getTitle(), 0, indexOf(getTitle(), '.'));
+		run("Duplicate...", "title="+title_tmp+"-TC_"+sample_tilt+"deg_Surf.tif");
+		
+		ph_new = ph * 1/cos(sample_tilt*PI/180);
+		setVoxelSize(pw, ph_new, 1, u);
+	}
+	
+	
+	if(do_cross_section_tilt_correction_image) {
+		// Warning for required plugin
+		warning_plugin_req = call("ij.Prefs.get", "sb.warning_plugin_req", true);
+		if(warning_plugin_req) {
+			Dialog.create("Warning");
+			Dialog.addMessage("Requires the plugin: TransformJ\nPlease acknowledge the author/paper (see Help).\nClick:\n   - 'Ok' to continue\n   - 'Cancel' to stop the action\n   - 'Help' to open the plugin page.\nThis warning can be disabled in the preferences.");
+			Dialog.addHelp("https://imagescience.org/meijering/software/transformj/");
+			Dialog.show();
+		}
+		
+		selectImage(id);
+		title_tmp = substring(getTitle(), 0, indexOf(getTitle(), '.'));
+		run("Duplicate...", "title="+title_tmp+"-TC_"+sample_tilt+"deg_XSec_ImgRescale.tif");
+		id_tmp = getImageID();
+		
+		rescale_factor = 1/sin(sample_tilt*PI/180);
+		run("TransformJ Scale", "x-factor=1.0 y-factor="+rescale_factor+" z-factor=1.0 interpolation=[Quintic B-Spline]");
+		selectImage(id_tmp);
+		close();
+	}
+	
+	if(do_surface_tilt_correction_image) {
+		// Warning for required plugin
+		if(warning_plugin_req) {
+			Dialog.create("Warning");
+			Dialog.addMessage("Requires the plugin: TransformJ\nPlease acknowledge the author/paper (see Help).\nClick:\n   - 'Ok' to continue\n   - 'Cancel' to stop the action\n   - 'Help' to open the plugin page.\nThis warning can be disabled in the preferences.");
+			Dialog.addHelp("https://imagescience.org/meijering/software/transformj/");
+			Dialog.show();
+		}
+		selectImage(id);
+		title_tmp = substring(getTitle(), 0, indexOf(getTitle(), '.'));
+		run("Duplicate...", "title="+title_tmp+"-TC_"+sample_tilt+"deg_Surf_ImgRescale.tif");
+		id_tmp = getImageID();
+		
+		rescale_factor = 1/cos(sample_tilt*PI/180);
+		run("TransformJ Scale", "x-factor=1.0 y-factor="+rescale_factor+" z-factor=1.0 interpolation=[Quintic B-Spline]");
+		selectImage(id_tmp);
+		close();
+	}
+	
+	selectImage(id);
+	
+	// store variables for later use
+	call("ij.Prefs.set", "sb.sample_tilt", sample_tilt); // default 52
+}
+
 // Open the source code (advanced)
 // Edit/adjust/inspect code
 function editSourceCode() {
-	SB_path = getDirectory("macros") + "\\toolsets\\" + "EMScaleBarTools.ijm";
+	SB_path = getDirectory("macros") + "/toolsets/" + "EMScaleBarTools.ijm";
 	FEImacro_path = getDirectory("macros") + "FEI_Crop_Scalebar.ijm";
-	run("Edit...", "open="+SB_path);
 	run("Edit...", "open="+FEImacro_path);
+	run("Edit...", "open="+SB_path);
+	
+}
+
+// Preferences
+function editPreferences() {
+	// Options dialog to set some general preferences
+	
+	// Options dialog
+	Dialog.create("Preferences");
+	Dialog.addCheckbox("Show warnings if extra plugins are required", warning_plugin_req);
+		
+	Dialog.addHelp("https://github.com/lukmuk/em-scalebartools");
+	Dialog.show();
+	
+	// Grab values from UI
+	warning_plugin_req_new = Dialog.getCheckbox();
+	
+	// store variables for later use
+	call("ij.Prefs.set", "sb.warning_plugin_req", warning_plugin_req_new); // default true
 }
 
 // Switch vertical positions of scale bar and scale-bar label
@@ -1060,10 +1237,12 @@ function switchScaleBarLabel() {
 	sb_X_center = sb_X + sb_width/2;
 	lbl_X_center = lbl_X + lbl_width/2;
 	lbl_X_new = lbl_X - (lbl_X_center - sb_X_center);
-	// The value of "2" in the following modifies the distance between label and scale bar
+	
+	// The value of "0.25" in the following modifies the distance between label and scale bar
 	// May give non-optimal results for specific fsfac values, i.e.
 	// that the label is far away from the scale bar
-	Overlay.drawString(scalebarlen+" "+unit, lbl_X_new, sb_Y + 2 * sb_height);
+	ypos = (sb_Y+lbl_height-sb_height) - 0.25*lbl_height;
+	Overlay.drawString(scalebarlen+" "+unit, lbl_X_new, ypos);
 
 	// Clean Up
 	run("Select None");
@@ -1209,15 +1388,19 @@ function HelpMenu() {
 	about= about+"\n- \"Misc. Functions\" menu: Drop-down menu with miscellaneous functions:";
 	about= about+"\n       \"Set pixel size and unit\": Scale image based on pixel size and unit.";
 	about= about+"\n       \"Set image width and unit\": Scale image based on image width and unit.";
+	about= about+"\n       \"Correct for tilted perspective\": Correct pixel size and/or re-scale image in vertical direction to account for tilted perspective.";
 	about= about+"\n       \"Calculate electron wavelength\": Calculate relativistic de Broglie-wavelength from an electron energy.";
 	about= about+"\n       \"Export/Import scale-bar parameters: Export creates a Fiji table that can be saved as csv and loaded with Import.";
 	about= about+"\n       \"Edit source code\": Opens the source code in the editor.";
+	about= about+"\n       \"Preferences\": Change some preferences for EMScaleBarTools.";
+	about= about+"\n       \"Help\": Show help dialog.";
 	about=about + "\n---------------------------------------------------------------------------------";
 	about= about+"\nDefault hotkeys:";
 	about=about+"\n";
-	about= about+"\n- \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor.";
 	about= about+"\n- \"Save As PNG... [ p ]\": Save image as PNG.";
-	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard.";
+	about= about+"\n- \"Save As SVG... [ s ]\": Save image as SVG. Reqires BioVoxxel Figure Tools.";
+	about= about+"\n- \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor. Do not use in publications.";
+	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard. Will re-scale copied simage if 'Auto re-scale images' is enabled.";
 	about= about+"\n- \"Switch positions [ t ]\": Switch scale bar and label positions.";
 	about= about+"\nNumpad:";
 	about= about+"\n- 5: Add/remove scale bar. Use with ALT key pressed to invert black/white color.";

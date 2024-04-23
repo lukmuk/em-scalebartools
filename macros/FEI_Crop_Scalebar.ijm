@@ -21,15 +21,20 @@ sf = call("ij.Prefs.get", "sb.sf", 1); // default 1
 wfac = call("ij.Prefs.get", "sb.wfac", 0.2);  // default 0.2
 fsfac = call("ij.Prefs.get", "sb.fsfac", 3);  // default 3
 col = call("ij.Prefs.get", "sb.col", "Black");  // default "Black"
-bgcol = call("ij.Prefs.get", "sb.bg", "White");  // default "White"
+bgcol = call("ij.Prefs.get", "sb.bgcol", "None");  // default "None"
 loc = call("ij.Prefs.get", "sb.loc", "Lower Right");  // default "Lower Right"
+switched = call("ij.Prefs.get", "sb.switched", false); //default false
+
+len = call("ij.Prefs.get", "sb.len", 1.0); 
+height = call("ij.Prefs.get", "sb.height", 1.0); 
+fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0); 
 
 bold = call("ij.Prefs.get", "sb.bold", true); //default true
 overlay = call("ij.Prefs.get", "sb.overlay", true); //default true
 hide = call("ij.Prefs.get", "sb.hide", false); //default false
 serif = call("ij.Prefs.get", "sb.serif", false); //default false
 
-sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Larger");
+sb_size_ref = call("ij.Prefs.get", "sb.sb_size_ref", "Width"); // default "Width"
 
 auto_unit_switching = call("ij.Prefs.get", "sb.auto_unit_switching", true); //default true
 auto_unit_ref = call("ij.Prefs.get", "sb.auto_unit_ref", "Width");
@@ -45,7 +50,6 @@ extraSBvals = call("ij.Prefs.get", "sb.extraSBvals", "75,150"); // default "75,1
 //FEI CROP SCALEBAR
 FEIaddSB = call("ij.Prefs.get", "sb.FEIaddSB", true); //default true
 FEIdoCrop = call("ij.Prefs.get", "sb.FEIdoCrop", true); //default true
-//FEIuseList = call("ij.Prefs.get", "sb.FEIuseList", false); //default false
 FEIshowMeta = call("ij.Prefs.get", "sb.FEIshowMeta", false); //default false
 FEIdoExtraCmd = call("ij.Prefs.get", "sb.FEIdoExtraCmd", false); //default false
 FEIextraCmd = call("ij.Prefs.get", "sb.FEIextraCmd", "run('Enhance Contrast', 'saturated=0.35');"); //default "run('Enhance Contrast', 'saturated=0.35');"
@@ -80,8 +84,10 @@ run("SEM FEI metadata Scale");
 
 //Optionally close log window with metadata
 if(FEIshowMeta == false) {
-	selectWindow("Log");
-	run("Close");
+	if(isOpen("Log")) {
+		selectWindow("Log");
+		run("Close");
+	}
 }
 
 // Add the scale bar
