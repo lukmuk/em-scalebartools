@@ -1,10 +1,10 @@
-# em-scalebartools
+# EMScaleBarTools
 
 Fiji macro toolset to quickly add a scale bar with reasonable size to an image. Developed for electron microscopy.
 | :exclamation:  Please double-check the scale-bar length for possible rounding errors, especially if it shows 1 µm, 1 nm, 1 mm, ... . |
 |-----------------------------------------|
 <img title="Basic usage" src="images/EMscalebartools_00.gif" alt="Example" data-align="left" width="450">  
-Image source: Cropped image of [Cobaea scandens](https://commons.wikimedia.org/wiki/File:Cobaea_scandens1-4.jpg) pollen by Marie Majaura from [Wikipedia](https://en.wikipedia.org/wiki/Scanning_electron_microscope).
+Image source: Cropped image of Cobaea scandens (https://commons.wikimedia.org/wiki/File:Cobaea_scandens1-4.jpg) pollen by Marie Majaura from Wikipedia (https://en.wikipedia.org/wiki/Scanning_electron_microscope).
 
 
 ## Examples
@@ -71,8 +71,6 @@ For a description of the other tools, take a look at the [wiki](https://github.c
 * Download the latest [release](https://github.com/lukmuk/em-scalebartools/releases), extract the `macros` folder, and copy it to your Fiji installation folder. It will add the``FEI_Crop_Scalebar.ijm`` macro to the macros folder and the `EMScaleBarTools.ijm` toolset to the `macros/toolset` folder.
 
 * Restart Fiji and select the `EMScaleBarTools` from `More Tools...` (>>) menu. 
-
-* Legacy option for v0.2 and below: [Adding new FEI/TFS microscope types](https://github.com/lukmuk/em-scalebartools/wiki/Adding-new-microscope-types)
 
 ## [Documentation](https://github.com/lukmuk/em-scalebartools/wiki)
 
