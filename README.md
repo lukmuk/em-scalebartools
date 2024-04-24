@@ -21,6 +21,14 @@ Batch conversion of SEM images (``Process -> Batch -> Macro...``) from tiff to p
 
 <img title="Example 1" src="images/example2.png" alt="Example" data-align="center">
 
+[Hotkeys](https://github.com/lukmuk/em-scalebartools/wiki/Hotkeys) can be used to quickly adjust the scale-bar appearance.  
+
+In-/Decreasing scale-bar length:  
+<img title="Basic usage" src="https://github.com/lukmuk/em-scalebartools/blob/main/images/hotkeys_4-6.gif" alt="Basic usage" data-align="left" width="450">  
+
+In-/Decreasing scale-bar size:  
+<img title="Basic usage" src="https://github.com/lukmuk/em-scalebartools/blob/main/images/hotkeys_2-8.gif" alt="Basic usage" data-align="left" width="450">  
+
 ## EMScaleBarTools in action
 
 Examples are from v0.2.
