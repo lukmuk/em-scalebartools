@@ -358,7 +358,7 @@ macro "Copy to system... [c]" {
 
 // Add scale bar
 // ALT: Invert color
-macro "Add Scale Bar [n5]"{
+macro "Add Scale Bar [5]"{
 	//Invert color if ALT is pressed
 	if(isKeyDown("alt")) {
 		//Get current values
@@ -402,7 +402,7 @@ macro "Add Scale Bar [n5]"{
 
 // Decrease scale-bar size
 // ALT: Specify scale-bar size from user input by modifying size factor sf
-macro "Shrink Scale Bar [n2]"{
+macro "Shrink Scale Bar [3]"{
 	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
 	if(isKeyDown("alt")) {
 		//Set scaling factor from user input
@@ -423,7 +423,7 @@ macro "Shrink Scale Bar [n2]"{
 
 // Increase scale-bar size
 // ALT: Specify scale-bar size from user input by modifying size factor sf
-macro "Enlarge Scale Bar Numpad [n8]" {
+macro "Enlarge Scale Bar [4]" {
 	sf_old = parseFloat(call("ij.Prefs.get", "sb.sf", 1.0));
 	height_old = parseFloat(call("ij.Prefs.get", "sb.height", 1.0));
 	fontsize_old = parseFloat(call("ij.Prefs.get", "sb.fontsize", 1.0));
@@ -450,7 +450,7 @@ macro "Enlarge Scale Bar Numpad [n8]" {
 
 // Increase scale-bar length in measurement units in 1-2-5 series
 // ALT: Specify scale-bar length from user input in length units
-macro "Increase Scale Bar Size Increment [n6]" {
+macro "Increase Scale Bar Size Increment [2]" {
 	scalebarlen = parseFloat(call("ij.Prefs.get", "sb.len", 1.0));
 
 	scalebarlen_new = round((scalebarlen*2.3)/(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3)))))))*(Math.pow(10,(floor(Math.log10(abs(scalebarlen*2.3))))));
@@ -471,16 +471,17 @@ macro "Increase Scale Bar Size Increment [n6]" {
 		if(scalebarlen_new > imagewidth) print("Desired scale-bar length exceeds image width (",toString(imagewidth,2), ").");
 		if(scalebarlen_new < 1)  print("Please choose a value >= 1 or switch length unit prefix (e.g. µm to nm).");
 	}
-
+	
 	// Update len
 	// if clause to prevent scale bar length being (i) larger than actual image width and (ii) smaller than 1
 	if(scalebarlen_new <= imagewidth && scalebarlen_new >= 1)  call("ij.Prefs.set", "sb.len", scalebarlen_new);
 	updateScalebar();
+	
 }
 
 // Decrease scale-bar length in measurement units in 1-2-5 series
 // ALT: Specify scale-bar length from user input in length units
-macro "Decrease Scale Bar Size Increment [n4]" {
+macro "Decrease Scale Bar Size Increment [1]" {
 	scalebarlen = parseFloat(call("ij.Prefs.get", "sb.len", 1.0));
 	height = call("ij.Prefs.get", "sb.height", 1.0);
 	fontsize = call("ij.Prefs.get", "sb.fontsize", 1.0);
@@ -523,28 +524,31 @@ macro "Decrease Scale Bar Size Increment [n4]" {
 
 
 // Set scale-bar position via numpad keys
-macro "Scale Bar Lower Right [n3]" {
-	call("ij.Prefs.set", "sb.loc", "Lower Right");
+macro "Scale Bar Corner Position Toggle  [6]" {
+	loc = call("ij.Prefs.get", "sb.loc", "Lower Right");
+	loc_changed = false;
+	if (loc == "Lower Right" && loc_changed == false) {
+		call("ij.Prefs.set", "sb.loc", "Upper Right");
+		loc_changed = true;
+	}
+	if (loc == "Upper Right" && loc_changed == false) {
+		call("ij.Prefs.set", "sb.loc", "Upper Left");
+		loc_changed = true;
+	}
+	if (loc == "Upper Left" && loc_changed == false) {
+		call("ij.Prefs.set", "sb.loc", "Lower Left");
+		loc_changed = true;
+	}
+	if (loc == "Lower Left" && loc_changed == false) {
+		call("ij.Prefs.set", "sb.loc", "Lower Right");
+		loc_changed = true;
+	}
 	updateScalebar();
 }
 
-macro "Scale Bar Upper Right [n9]" {
-	call("ij.Prefs.set", "sb.loc", "Upper Right");
-	updateScalebar();
-}
-
-macro "Scale Bar Lower Left [n1]" {
-	call("ij.Prefs.set", "sb.loc", "Lower Left");
-	updateScalebar();
-}
-
-macro "Scale Bar Upper Left [n7]" {
-	call("ij.Prefs.set", "sb.loc", "Upper Left");
-	updateScalebar();
-}
 
 // Reset scale bar location to "Lower Right" and scaling factor back to 1.0
-macro "Reset Scale Bar [n0]" {
+macro "Reset Scale Bar [7]" {
 	// Add a scalebar if no overlay is present
 	if(Overlay.size == 0) {
 		call("ij.Prefs.set", "sb.loc", "Lower Right");
@@ -689,6 +693,7 @@ function addScalebar() {
 		}
 		else {
 			newtitle = substring(getTitle(), 0, lastIndexOf(getTitle(), '.'));
+		}
 		run("Duplicate...", "title="+newtitle+"_scale-"+scalebarlen+unit+".tif");
 		if(auto_rescale) close(name);
 	}
@@ -1203,10 +1208,11 @@ function correctSampleTilt() {
 // Open the source code (advanced)
 // Edit/adjust/inspect code
 function editSourceCode() {
-	SB_path = getDirectory("macros") + "/toolsets/" + "EMScaleBarTools.ijm";
+	SB_path = getDirectory("macros") + "/toolsets/" + "EMScaleBarTools_Laptop.ijm";
 	FEImacro_path = getDirectory("macros") + "FEI_Crop_Scalebar.ijm";
 	run("Edit...", "open="+FEImacro_path);
 	run("Edit...", "open="+SB_path);
+	
 }
 
 // Preferences
@@ -1420,7 +1426,7 @@ function importEMScaleBarToolsParams() {
 
 // Help Menu
 function HelpMenu() {
-	Dialog.create("About EMScaleBarTools");
+	Dialog.create("About EMScaleBarTools (Laptop edition)");
 	about="------------------------ EMScaleBarTools --------------------------";
 	about= about+"\nThe \"EMScaleBarTools\" toolset allows drawing of scale bars based on the relative image size.";
 	about= about+"\nSEM images from Thermo Fisher Scientific (TFS)/FEI are often saved with a data bar which can be cropped.";
@@ -1453,13 +1459,13 @@ function HelpMenu() {
 	about= about+"\n- \"Save As JPEG... [ j ]\": Save image as JPEG, prompts for compression factor. Do not use in publications.";
 	about= about+"\n- \"Copy to system... [ c ]\": Copy current image to system clipboard. Will re-scale copied simage if 'Auto re-scale images' is enabled.";
 	about= about+"\n- \"Switch positions [ t ]\": Switch scale bar and label positions.";
-	about= about+"\nNumpad:";
+	about= about+"\nNumber bar:";
 	about= about+"\n- 5: Add/remove scale bar. Use with ALT key pressed to invert black/white color.";
-	about= about+"\n- 1, 3, 7, 9: Move scale bar to (1) Lower left, (3) lower right, (7) upper left, (9) upper right.";
-	about= about+"\n- 2, 8: De-/Increase scale-bar size. Use with ALT key pressed to enter a scaling factor.";
-	about= about+"\n- 4, 6: De-/Increase scale-bar length. Use with ALT key pressed to enter a specific length.";
-	about= about+"\n- 0: Reset scale bar to scaling factor 1.0 and lower-right position.";
-	about= about+"\n- *: Open \"QuickScaleBar\" tool options menu.";
+	about= about+"\n- 6: Move scale bar to (1) Lower left, (3) lower right, (7) upper left, (9) upper right.";
+	about= about+"\n- 3, 4: De-/Increase scale-bar size. Use with ALT key pressed to enter a scaling factor.";
+	about= about+"\n- 1, 2: De-/Increase scale-bar length. Use with ALT key pressed to enter a specific length.";
+	about= about+"\n- 7: Reset scale bar to scaling factor 1.0 and lower-right position.";
+	about= about+"\n- 8: Open \"QuickScaleBar\" tool options menu.";
 	about=about + "\n---------------------------------------------------------------------------------";
 	about=about +"\nVersion: "+version+"";
 	about=about +"\nAuthor: Lukas Gr"+fromCharCode(0x00FC)+"newald, "+date+", https://github.com/lukmuk/em-scalebartools";

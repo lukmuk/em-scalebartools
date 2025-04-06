@@ -11,7 +11,7 @@ Installation:
 4) For a help menu select the "?" button and enter the "Help" menu and/or visit the Github page.
 
 * This code is under MIT licence.
-* Author: Lukas Gruenewald, 08/2023, https://github.com/lukmuk/em-scalebartools
+* Author: Lukas Gruenewald, 04/2025, https://github.com/lukmuk/em-scalebartools
 
 */
 
