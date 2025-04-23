@@ -1,6 +1,6 @@
 # EMScaleBarTools
 
-Fiji macro toolset to quickly add a scale bar with reasonable size to an image. Developed for electron microscopy.
+Fiji macro toolset to quickly add a scale bar with reasonable size to an image. Developed for electron microscopy, but works for any scaled image in Fiji.
 | :exclamation:  Please double-check the scale-bar length for possible rounding errors, especially if it shows 1 µm, 1 nm, 1 mm, ... . |
 |-----------------------------------------|
 <img title="Basic usage" src="images/EMscalebartools_00.gif" alt="Example" data-align="left" width="450">  
