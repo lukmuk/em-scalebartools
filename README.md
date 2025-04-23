@@ -6,6 +6,12 @@ Fiji macro toolset to quickly add a scale bar with reasonable size to an image (
 <img title="Basic usage" src="images/EMscalebartools_00.gif" alt="Example" data-align="left" width="450">  
 Image source: Cropped image of Cobaea scandens (https://commons.wikimedia.org/wiki/File:Cobaea_scandens1-4.jpg) pollen by Marie Majaura from Wikipedia (https://en.wikipedia.org/wiki/Scanning_electron_microscope).
 
+## Why use EMScaleBarTools?
+The default tool in Fiji for creating a scale bar (*Analyze* -> *Tools* -> *Scale Bar...*) uses mainly "Width in (unit)", "Thickness in Pixels", and "Fontsize" to define the scale-bar size.  
+Defining the scale-bar size based on pixels makes it inconvenient to generate the same scale-bar size for images of different pixel dimensions.  
+
+*EMScaleBarTools* calculates the values for the "Thickness in Pixels" and "Fontsize" relative to the image size, so that it should give similar scale-bar appearance between images and a fast way to create a nicely visible scale bar.  
+In addition, it comes with additional functions for setting the image scale, copying it to the system clipboard for quick insertion into, e.g., presentations or chats, and more!
 
 ## Examples
 
