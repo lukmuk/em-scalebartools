@@ -78,7 +78,7 @@ For a description of the other tools, take a look at the [wiki](https://github.c
 
 * **Optional**: Cropping the FEI/TFS info bar for SEM images requires the useful [EM tool](https://imagej.net/plugins/imbalence) plugin by **IMBalENce**  as FEI/TFS images are scaled with [SEM FEI metadata scale](https://imagej.net/plugins/sem-fei-metadata-scale). Install via the Fiji update site.
 
-* Restart Fiji and select the `EMScaleBarTools` from `More Tools...` (>>) menu. 
+* Restart Fiji and select the `EMScaleBarTools` (or `EMScaleBarTools_Laptop` if you don't have a numpad) from `More Tools...` (>>) menu.  
 
 ## [Documentation](https://github.com/lukmuk/em-scalebartools/wiki)
 
